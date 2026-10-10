@@ -1,0 +1,31 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Profilim{% endblock %}
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Profil" hero_title="Mening <em>profilim</em>" %}
+<section class="page-body"><div class="container">
+  <div class="profile-grid">
+    <aside class="profile-side">
+      <div class="avatar">{{ user_obj.first_name|default:user_obj.username|slice:":1"|upper }}</div>
+      <h3>{{ user_obj.get_full_name|default:user_obj.username }}</h3>
+      <small>{{ user_obj.email }}</small>
+      <div class="nav-links">
+        <a href="{% url 'orders:my-orders' %}"><i class="fa fa-list-alt"></i> Buyurtmalarim</a>
+        <a href="{% url 'orders:wishlist' %}"><i class="fa fa-heart-o"></i> Xohishlarim</a>
+        <a href="{% url 'orders:cart' %}"><i class="fa fa-shopping-bag"></i> Savat</a>
+        <a href="{% url 'users:logout' %}"><i class="fa fa-sign-out"></i> Chiqish</a>
+      </div>
+    </aside>
+    <form class="form-card" method="post" novalidate>
+      {% csrf_token %}
+      <div class="fc-title"><i class="fa fa-user"></i> Shaxsiy ma'lumotlar</div>
+      {% if form.errors %}<div class="alert alert-error"><i class="fa fa-exclamation-circle"></i><div>{% for f in form %}{% for e in f.errors %}{{ f.label }}: {{ e }}<br>{% endfor %}{% endfor %}</div></div>{% endif %}
+      <div class="grid-2">
+        <div class="field"><label class="label" for="id_first_name">Ism</label><input class="input" id="id_first_name" name="first_name" value="{{ form.first_name.value|default:'' }}"></div>
+        <div class="field"><label class="label" for="id_last_name">Familiya</label><input class="input" id="id_last_name" name="last_name" value="{{ form.last_name.value|default:'' }}"></div>
+      </div>
+      <div class="field"><label class="label" for="id_email">Email</label><input class="input" id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}"></div>
+      <button class="btn btn-yellow btn-lg" type="submit">Saqlash</button>
+    </form>
+  </div>
+</div></section>
+{% endblock %}

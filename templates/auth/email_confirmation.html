@@ -1,0 +1,12 @@
+{% extends 'layouts/base.html' %}
+{% block title %}{{ title|default:"Xabar" }}{% endblock %}
+{% block content %}
+<section class="page-body" style="padding-top:70px"><div class="container">
+  <div class="center-card">
+    <div class="ico"><i class="fa fa-envelope-o"></i></div>
+    <h2>{{ header|default:"Email yuborildi" }}</h2>
+    <p>{{ message|default:"Emailingizni tekshiring." }}</p>
+    <a href="{% url 'users:login' %}" class="btn btn-yellow btn-lg">Kirish sahifasiga</a>
+  </div>
+</div></section>
+{% endblock %}

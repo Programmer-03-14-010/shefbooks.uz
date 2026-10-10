@@ -1,0 +1,199 @@
+{% load static i18n my_tags %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'uz' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Bosh sahifa{% endblock %} — SHEFBOOKS kitob do'koni</title>
+  <meta name="description" content="{% block meta_desc %}SHEFBOOKS — tarix, adabiyot, din va biznesga oid sifatli kitoblar. O'zbekiston bo'ylab tez yetkazib berish.{% endblock %}">
+  <meta name="theme-color" content="#09090a">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700;1,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'libs/font-awesome/css/font-awesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/shef.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body {% block body %}{% endblock %}>
+
+<div id="page-loader"><div class="loader-book"><i></i><i></i><i></i></div></div>
+
+<div class="announce">
+  <div class="container">
+    <div class="announce-left">
+      <span><i class="fa fa-truck"></i> O'zbekiston bo'ylab yetkazib berish</span>
+      <span><i class="fa fa-clock-o"></i> Buyurtma qabuli 24/7</span>
+      <span><i class="fa fa-shield"></i> Sifatli original kitoblar</span>
+    </div>
+    <a href="tel:{{ SHOP.phone_href }}"><i class="fa fa-phone"></i> {{ SHOP.phone }}</a>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="container header-main">
+    <a href="{% url 'pages:home' %}" class="brand" aria-label="SHEFBOOKS">
+      <span class="brand-mark"><i class="fa fa-book"></i></span>
+      <span class="brand-name">SHEFBOOKS<small>KITOB DO'KONI</small></span>
+    </a>
+
+    <form class="search-box desktop" method="get" action="{% url 'products:list' %}" role="search">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Kitob, muallif yoki nashriyot qidiring..." aria-label="Qidirish">
+      <button type="submit" aria-label="Qidirish"><i class="fa fa-search"></i></button>
+    </form>
+
+    <div class="header-actions">
+      <a href="{% url 'products:list' %}" class="header-link desktop"><i class="fa fa-book"></i> Katalog</a>
+      <a href="{% url 'orders:wishlist' %}" class="icon-btn" title="Xohishlarim" aria-label="Xohishlarim">
+        <i class="fa fa-heart-o"></i><span class="badge-dot" data-wish-badge data-count="{{ wish_count }}">{{ wish_count }}</span>
+      </a>
+
+      <div class="mini-cart">
+        <a href="{% url 'orders:cart' %}" class="icon-btn" title="Savat" aria-label="Savat">
+          <i class="fa fa-shopping-bag"></i><span class="badge-dot" data-cart-badge data-count="{{ cart_count }}">{{ cart_count }}</span>
+        </a>
+        <div class="mini-cart-panel" id="mini-cart-panel" data-url="{% url 'orders:mini-cart' %}">
+          {% include 'components/mini_cart.html' %}
+        </div>
+      </div>
+
+      {% if request.user.is_authenticated %}
+      <div class="user-menu desktop">
+        <a href="{% url 'users:account' %}" class="icon-btn" aria-label="Profil"><i class="fa fa-user-o"></i></a>
+        <div class="user-panel">
+          <div class="who">{{ request.user.first_name|default:request.user.username }}<small>{{ request.user.email }}</small></div>
+          <a href="{% url 'users:account' %}"><i class="fa fa-user-o"></i> Profilim</a>
+          <a href="{% url 'orders:my-orders' %}"><i class="fa fa-list-alt"></i> Buyurtmalarim</a>
+          <a href="{% url 'orders:wishlist' %}"><i class="fa fa-heart-o"></i> Xohishlarim</a>
+          <a href="{% url 'users:logout' %}"><i class="fa fa-sign-out"></i> Chiqish</a>
+        </div>
+      </div>
+      {% else %}
+      <a href="{% url 'users:login' %}" class="header-link desktop"><i class="fa fa-user-o"></i> Kirish</a>
+      <a href="{% url 'users:register' %}" class="btn btn-yellow btn-sm header-cta desktop">Ro'yxatdan o'tish</a>
+      {% endif %}
+
+      <button class="icon-btn menu-toggle" data-drawer-open aria-label="Menyu"><i class="fa fa-bars"></i></button>
+    </div>
+  </div>
+
+  <div class="search-mobile" style="display:none">
+    <form class="search-box" method="get" action="{% url 'products:list' %}" style="max-width:none">
+      <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Kitob qidiring..." aria-label="Qidirish">
+      <button type="submit" aria-label="Qidirish"><i class="fa fa-search"></i></button>
+    </form>
+  </div>
+
+  <nav class="cat-strip" aria-label="Turkumlar">
+    <div class="container">
+      <a href="{% url 'products:list' %}" class="all-link"><i class="fa fa-bars"></i> Barcha kitoblar</a>
+      {% for c in nav_categories %}<a href="{% url 'products:list' %}?cat={{ c.pk }}" {% if request.GET.cat == c.pk|stringformat:'s' %}class="is-active"{% endif %}>{{ c.title }}</a>{% endfor %}
+      <a href="{% url 'products:list' %}?sort=discount"><i class="fa fa-percent"></i> Chegirmalar</a>
+      <a href="{% url 'blogs:list' %}">Yangiliklar</a>
+      <a href="{% url 'pages:about' %}">Biz haqimizda</a>
+      <a href="{% url 'pages:contact' %}">Bog'lanish</a>
+    </div>
+  </nav>
+</header>
+<style>@media (max-width:960px){.search-mobile{display:block!important}.search-mobile .search-box{max-width:none}}</style>
+
+<div class="drawer-backdrop"></div>
+<aside class="drawer" aria-label="Mobil menyu">
+  <div class="drawer-head">
+    <span class="brand-name">SHEFBOOKS</span>
+    <button class="icon-btn" data-drawer-close aria-label="Yopish"><i class="fa fa-times"></i></button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="{% url 'pages:home' %}"><i class="fa fa-home"></i> Bosh sahifa</a>
+    <a href="{% url 'products:list' %}"><i class="fa fa-book"></i> Barcha kitoblar</a>
+    <a href="{% url 'products:list' %}?sort=discount"><i class="fa fa-percent"></i> Chegirmalar</a>
+    <a href="{% url 'orders:wishlist' %}"><i class="fa fa-heart-o"></i> Xohishlarim</a>
+    <a href="{% url 'orders:cart' %}"><i class="fa fa-shopping-bag"></i> Savat</a>
+    {% if nav_categories %}<h6>Turkumlar</h6>{% endif %}
+    {% for c in nav_categories %}<a href="{% url 'products:list' %}?cat={{ c.pk }}"><i class="fa fa-angle-right"></i> {{ c.title }}</a>{% endfor %}
+    <h6>Sahifalar</h6>
+    <a href="{% url 'blogs:list' %}"><i class="fa fa-newspaper-o"></i> Yangiliklar</a>
+    <a href="{% url 'pages:about' %}"><i class="fa fa-info-circle"></i> Biz haqimizda</a>
+    <a href="{% url 'pages:contact' %}"><i class="fa fa-envelope-o"></i> Bog'lanish</a>
+  </nav>
+  <div class="drawer-foot">
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'orders:my-orders' %}" class="btn btn-yellow btn-block"><i class="fa fa-list-alt"></i> Buyurtmalarim</a>
+      <a href="{% url 'users:logout' %}" class="btn btn-ghost btn-block">Chiqish</a>
+    {% else %}
+      <a href="{% url 'users:login' %}" class="btn btn-yellow btn-block">Kirish</a>
+      <a href="{% url 'users:register' %}" class="btn btn-ghost btn-block">Ro'yxatdan o'tish</a>
+    {% endif %}
+  </div>
+</aside>
+
+<div id="django-messages" hidden>{% for message in messages %}<span data-msg="{{ message }}" data-tag="{{ message.tags }}"></span>{% endfor %}</div>
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="site-footer">
+  <div class="footer-cta">
+    <div class="container">
+      <div><h3>Kitob tanlashda yordam kerakmi?</h3><p>Mutaxassislarimiz sizga mos kitobni tanlab berishadi — bepul.</p></div>
+      <a href="tel:{{ SHOP.phone_href }}" class="btn btn-dark btn-lg"><i class="fa fa-phone"></i> {{ SHOP.phone }}</a>
+    </div>
+  </div>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{% url 'pages:home' %}" class="brand"><span class="brand-mark"><i class="fa fa-book"></i></span><span class="brand-name">SHEFBOOKS</span></a>
+        <p>SHEFBOOKS sizni bilimli bo'lishingizda doim yordamda. Qiziqtirgan kitoblaringiz haqida bilib oling va ularni onlayn buyurtma qiling.</p>
+        <div class="socials">
+          {% if SHOP.instagram %}<a href="{{ SHOP.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa fa-instagram"></i></a>{% endif %}
+          {% if SHOP.youtube %}<a href="{{ SHOP.youtube }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="fa fa-youtube-play"></i></a>{% endif %}
+          {% if SHOP.telegram %}<a href="{{ SHOP.telegram }}" target="_blank" rel="noopener" aria-label="Telegram"><i class="fa fa-telegram"></i></a>{% endif %}
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Do'kon</h5>
+        <ul>
+          <li><a href="{% url 'products:list' %}">Barcha kitoblar</a></li>
+          <li><a href="{% url 'products:list' %}?sort=new">Yangi kelganlar</a></li>
+          <li><a href="{% url 'products:list' %}?sort=popular">Ommabop kitoblar</a></li>
+          <li><a href="{% url 'products:list' %}?sort=discount">Chegirmalar</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Ma'lumot</h5>
+        <ul>
+          <li><a href="{% url 'pages:about' %}">Biz haqimizda</a></li>
+          <li><a href="{% url 'blogs:list' %}">Yangiliklar</a></li>
+          <li><a href="{% url 'pages:contact' %}">Bog'lanish</a></li>
+          <li><a href="{% url 'orders:my-orders' %}">Buyurtmalarim</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Bog'lanish</h5>
+        <div class="contact-line"><i class="fa fa-phone"></i><div><small>Telefon</small><b>{{ SHOP.phone }}</b></div></div>
+        <div class="contact-line"><i class="fa fa-envelope-o"></i><div><small>Email</small><b>{{ SHOP.email }}</b></div></div>
+        <div class="contact-line"><i class="fa fa-clock-o"></i><div><small>Ish vaqti</small><b>24/7 — har kuni</b></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© {% now "Y" %} <b>SHEFBOOKS</b>. Barcha huquqlar himoyalangan.</span>
+      <span>
+        {% get_current_language as LANGUAGE_CODE %}
+        <a href="{% get_lang_url request 'uz' %}">🇺🇿 O'zbekcha</a> &nbsp;·&nbsp; <a href="{% get_lang_url request 'en' %}">🇺🇸 English</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<nav class="mobile-tabbar" aria-label="Pastki menyu">
+  <a href="{% url 'pages:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fa fa-home"></i>Bosh</a>
+  <a href="{% url 'products:list' %}" class="{% if request.resolver_match.app_name == 'products' %}active{% endif %}"><i class="fa fa-book"></i>Katalog</a>
+  <a href="{% url 'orders:cart' %}"><i class="fa fa-shopping-bag"></i>Savat<span class="badge-dot" data-cart-badge data-count="{{ cart_count }}">{{ cart_count }}</span></a>
+  <a href="{% url 'orders:wishlist' %}"><i class="fa fa-heart-o"></i>Xohish</a>
+  <a href="{% if request.user.is_authenticated %}{% url 'users:account' %}{% else %}{% url 'users:login' %}{% endif %}"><i class="fa fa-user-o"></i>Profil</a>
+</nav>
+
+<button class="to-top" aria-label="Tepaga"><i class="fa fa-angle-up"></i></button>
+<div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+<script src="{% static 'js/shef.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

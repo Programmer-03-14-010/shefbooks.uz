@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Yangiliklar{% endblock %}
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Yangiliklar" hero_title="Foydali <em>maqolalar</em>" hero_text="Kitoblar olamidan yangiliklar va tavsiyalar." %}
+<section class="page-body"><div class="container">
+  {% if blogs %}
+  <div class="blog-grid">
+    {% for blog in blogs %}
+    <a href="{% url 'blogs:blog_detail' blog.pk %}" class="blog-card">
+      <div class="thumb"><img src="{{ blog.image.url }}" alt="{{ blog.title }}" loading="lazy"><span class="date">{{ blog.created_at|date:"d.m.Y" }}</span></div>
+      <div class="body"><h3>{{ blog.title }}</h3><p>{{ blog.description|truncatewords:22 }}</p><span class="more">Batafsil <i class="fa fa-long-arrow-right"></i></span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% if is_paginated %}
+  <nav class="pagination">
+    {% if page_obj.has_previous %}<a class="page-btn" href="?page={{ page_obj.previous_page_number }}"><i class="fa fa-angle-left"></i></a>{% endif %}
+    {% for n in paginator.page_range %}{% if n == page_obj.number %}<span class="page-btn active">{{ n }}</span>{% else %}<a class="page-btn" href="?page={{ n }}">{{ n }}</a>{% endif %}{% endfor %}
+    {% if page_obj.has_next %}<a class="page-btn" href="?page={{ page_obj.next_page_number }}"><i class="fa fa-angle-right"></i></a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="empty-state"><div class="ico"><i class="fa fa-newspaper-o"></i></div><h3>Hozircha maqolalar yo'q</h3><p>Tez orada yangi maqolalar qo'shiladi.</p></div>
+  {% endif %}
+</div></section>
+{% endblock %}

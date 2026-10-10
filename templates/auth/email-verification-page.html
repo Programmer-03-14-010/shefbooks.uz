@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Emailni tasdiqlash{% endblock %}
+{% block content %}
+<section class="page-body" style="padding-top:70px"><div class="container">
+  <div class="center-card">
+    <div class="ico"><i class="fa fa-shield"></i></div>
+    <h2>Emailni tasdiqlang</h2>
+    <p><b>{{ email }}</b> manziliga 6 xonali kod yuborildi.</p>
+    <form action="{% url 'users:verify-email' %}" method="post" id="verify-form">
+      {% csrf_token %}<input type="hidden" name="code" id="code-input">
+      <div class="otp-boxes">{% for i in "123456" %}<input type="text" maxlength="1" inputmode="numeric" class="otp-digit" aria-label="Raqam {{ i }}">{% endfor %}</div>
+      <button class="btn btn-yellow btn-lg btn-block" type="submit">Tasdiqlash</button>
+    </form>
+    <p class="auth-foot">Kodni olmadingizmi? <a href="{% url 'users:resend-code' %}">Qayta yuborish</a></p>
+  </div>
+</div></section>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  var digits=document.querySelectorAll('.otp-digit'), code=document.getElementById('code-input'), form=document.getElementById('verify-form');
+  function sync(){ code.value=[].map.call(digits,function(d){return d.value;}).join(''); }
+  [].forEach.call(digits,function(el,i){
+    el.addEventListener('input',function(){ el.value=el.value.replace(/\D/g,'').slice(-1); if(el.value&&i<digits.length-1)digits[i+1].focus(); sync(); });
+    el.addEventListener('keydown',function(e){ if(e.key==='Backspace'&&!el.value&&i>0)digits[i-1].focus(); });
+    el.addEventListener('paste',function(e){ e.preventDefault(); var t=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,''); t.slice(0,6).split('').forEach(function(ch,j){digits[j].value=ch;}); sync(); digits[Math.min(t.length,5)].focus(); });
+  });
+  form.addEventListener('submit',function(e){ sync(); if(code.value.length<6){ e.preventDefault(); shefToast("6 xonali kodni to'liq kiriting.",'warning'); } });
+  digits[0].focus();
+})();
+</script>
+{% endblock %}

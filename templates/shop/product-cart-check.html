@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}To'lov{% endblock %}
+
+{% block content %}
+{% include 'components/page_hero.html' with crumb="To'lov" hero_title="To'lovni <em>tasdiqlang</em>" hero_text="Karta raqamiga o'tkazma qiling va chek rasmini yuklang." %}
+<section class="page-body">
+  <div class="container">
+    {% include 'components/steps_bar.html' with step=3 %}
+    <div class="pay-layout">
+      <div>
+        <div class="bank-card">
+          <div class="top"><span>SHEFBOOKS TO'LOV</span><span class="fa fa-credit-card" style="font-size:22px"></span></div>
+          <div class="chip-ico"></div>
+          <div class="num"><span id="card-num">{{ card_number }}</span><button type="button" class="copy-btn" data-copy="{{ card_number }}"><i class="fa fa-files-o"></i> Nusxalash</button></div>
+          <div class="holder">{{ card_holder }}</div>
+        </div>
+        <div class="pay-note"><i class="fa fa-info-circle"></i><div>Kartaga <b>{{ order.total_amount|money }} so'm</b> o'tkazing{% if order.is_uzpost %} va pochta xizmati uchun alohida <b>{{ order.delivery_fee|money }} so'm</b> to'lang{% endif %}. Chek rasmini pastdagi formaga yuklang — to'lov tekshirilgach, buyurtmangiz tasdiqlanadi.</div></div>
+
+        <form class="form-card" method="post" enctype="multipart/form-data" style="margin-top:26px">
+          {% csrf_token %}
+          <div class="fc-title"><i class="fa fa-cloud-upload"></i> Chekni yuklang</div>
+          {% if form.errors %}<div class="alert alert-error"><i class="fa fa-exclamation-circle"></i><div>{% for f in form %}{% for e in f.errors %}{{ e }}<br>{% endfor %}{% endfor %}</div></div>{% endif %}
+
+          <div class="dz-block">
+            <label class="label">Kitob to'lovi cheki <span>MAJBURIY</span></label>
+            <div class="dropzone" data-input="id_payment_receipt"><i class="fa fa-picture-o"></i><b class="dz-name">Rasmni tanlang yoki shu yerga tashlang</b><small>JPG, PNG yoki WEBP</small><img class="preview" alt="Chek"></div>
+            <input class="file-hidden" type="file" id="id_payment_receipt" name="payment_receipt" accept="image/*" required>
+          </div>
+
+          {% if order.is_uzpost %}
+          <div class="dz-block">
+            <label class="label">Pochta to'lovi cheki <span>UZPOST</span></label>
+            <div class="dropzone" data-input="id_post_receipt"><i class="fa fa-envelope-o"></i><b class="dz-name">Pochta to'lovi chekini yuklang</b><small>{{ order.delivery_fee|money }} so'm</small><img class="preview" alt="Pochta cheki"></div>
+            <input class="file-hidden" type="file" id="id_post_receipt" name="post_receipt" accept="image/*" required>
+          </div>
+          {% endif %}
+          <button class="btn btn-yellow btn-lg btn-block" type="submit"><i class="fa fa-check"></i> Buyurtmani yakunlash</button>
+        </form>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Buyurtma #{{ order.id }}</h3>
+        {% for item in order.items.all %}
+        <div class="sum-row"><span>{{ item.product_title|truncatechars:30 }} × {{ item.product_quantity }}</span><b>{{ item.product_price|money }}</b></div>
+        {% endfor %}
+        <div class="sum-row"><span>Yetkazish punkti</span><b style="text-align:right;font-size:13px;max-width:60%">{{ order.address|truncatechars:60 }}</b></div>
+        {% if order.is_uzpost %}<div class="sum-row"><span>Pochta xizmati (alohida)</span><b>{{ order.delivery_fee|money }}</b></div>{% endif %}
+        <div class="sum-total"><span>Kitoblar jami</span><strong>{{ order.total_amount|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
+        <div class="assure"><div><i class="fa fa-user"></i> {{ order.full_name }}</div><div><i class="fa fa-phone"></i> {{ order.phone_number }}</div></div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

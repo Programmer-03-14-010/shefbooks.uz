@@ -1,0 +1,213 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Bosh sahifa{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow"><i class="fa fa-bookmark"></i> Onlayn kitob do'koni</span>
+      <h1>Haqiqatga eltuvchi yo'l — <em>kitobdir.</em></h1>
+      <p class="hero-lead">Tarix, adabiyot, din va biznesga oid saralangan kitoblar. Qulay narxlar, original nashrlar va butun O'zbekiston bo'ylab tezkor yetkazib berish.</p>
+      <div class="hero-cta">
+        <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Kitoblarni ko'rish <i class="fa fa-long-arrow-right"></i></a>
+        <a href="{% url 'products:list' %}?sort=new" class="btn btn-ghost btn-lg">Yangi kelganlar</a>
+      </div>
+      <div class="hero-stats">
+        <div><b data-count="{{ books_total|default:0 }}" data-suffix="+">{{ books_total }}+</b><span>Kitoblar katalogda</span></div>
+        <div><b data-count="14">14</b><span>Hudud va viloyatlar</span></div>
+        <div><b data-count="592">592</b><span>Yetkazib berish punktlari</span></div>
+      </div>
+    </div>
+
+    <div class="hero-stage" aria-hidden="true">
+      <div class="disc"></div><div class="ring"></div>
+      <div class="hero-books">
+        {% for b in hero_books %}
+          <a href="{{ b.get_absolute_url }}" class="hbook"><img src="{{ b.image1.url }}" alt="{{ b.title }}"></a>
+        {% empty %}
+          <div class="hbook hbook-ph"><i class="fa fa-book"></i></div>
+          <div class="hbook hbook-ph"><i class="fa fa-book"></i></div>
+          <div class="hbook hbook-ph"><i class="fa fa-book"></i></div>
+        {% endfor %}
+      </div>
+      <div class="hero-chip c1"><i class="fa fa-truck"></i><div>Tez yetkazish<small>BTS va UZPOST orqali</small></div></div>
+      <div class="hero-chip c2"><i class="fa fa-star"></i><div>Sifat kafolati<small>Original nashrlar</small></div></div>
+    </div>
+  </div>
+  <div class="hero-wave"></div>
+</section>
+
+<!-- ISHONCH -->
+<section class="trust">
+  <div class="container">
+    <div class="trust-grid">
+      <div class="trust-item reveal"><i class="fa fa-truck"></i><div><b>Butun O'zbekiston bo'ylab</b><span>BTS va UZPOST punktlariga</span></div></div>
+      <div class="trust-item reveal" data-d="1"><i class="fa fa-shield"></i><div><b>Original kitoblar</b><span>Sifat kafolatlangan</span></div></div>
+      <div class="trust-item reveal" data-d="2"><i class="fa fa-credit-card"></i><div><b>Qulay to'lov</b><span>Karta orqali o'tkazma</span></div></div>
+      <div class="trust-item reveal" data-d="3"><i class="fa fa-headphones"></i><div><b>Maslahat 24/7</b><span>{{ SHOP.phone }}</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TURKUMLAR -->
+{% if categories %}
+<section class="section section-dark" style="margin-top:60px">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div><span class="sec-eyebrow">Turkumlar</span><h2 class="sec-title">Qiziqishingizga mos <em>kitob toping</em></h2></div>
+      <a href="{% url 'products:list' %}" class="link-arrow">Barchasini ko'rish <i class="fa fa-long-arrow-right"></i></a>
+    </div>
+    <div class="cat-grid">
+      {% for c in categories %}
+      <a href="{% url 'products:list' %}?cat={{ c.pk }}" class="cat-tile reveal" data-d="{{ forloop.counter0|add:0|divisibleby:3|yesno:'0,1' }}">
+        <span class="cat-no">0{{ forloop.counter }}</span>
+        <div><h3>{{ c.title }}</h3><small>{{ c.n }} ta kitob <i class="fa fa-arrow-right"></i></small></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- TANLANGAN -->
+{% if featured %}
+<section class="section">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div><span class="sec-eyebrow">Muharrir tanlovi</span><h2 class="sec-title">Eng yaxshi <em>kitoblar</em></h2><p class="sec-sub">Mutaxassislarimiz tavsiya qilgan, o'quvchilar sevib o'qiydigan nashrlar.</p></div>
+      <a href="{% url 'products:list' %}" class="link-arrow">Hammasi <i class="fa fa-long-arrow-right"></i></a>
+    </div>
+    <div class="rail">
+      {% for product in featured|slice:":8" %}<div class="reveal" data-d="{{ forloop.counter0|divisibleby:2|yesno:'1,2' }}">{% include 'components/book_card.html' %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- AKSIYA PLITKALARI -->
+<section class="section" style="padding-top:0">
+  <div class="container promo-grid">
+    <a href="{% url 'products:list' %}?sort=discount" class="promo reveal">
+      <img src="{% static 'img/home/effect10.jpg' %}" alt="" loading="lazy">
+      <div><span class="tag">Aksiya</span><h3>Chegirmadagi kitoblar — hoziroq xarid qiling</h3><span class="btn btn-yellow">Chegirmalarni ko'rish <i class="fa fa-long-arrow-right"></i></span></div>
+    </a>
+    <a href="{% url 'products:list' %}?sort=new" class="promo reveal" data-d="1">
+      <img src="{% static 'img/home/effect11.jpg' %}" alt="" loading="lazy">
+      <div><span class="tag">Yangi</span><h3>Yangi kelgan nashrlar bilan tanishing</h3><span class="btn btn-yellow">Yangiliklarni ko'rish <i class="fa fa-long-arrow-right"></i></span></div>
+    </a>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    {% for i in "12" %}<span>Kitob — hayot sabog'idir</span><span>Bilim — eng katta boylik</span><span>O'qigan inson yutadi</span><span>Har kuni bitta sahifa</span>{% endfor %}
+  </div>
+</div>
+
+<!-- BESTSELLER -->
+{% if bestsellers %}
+<section class="section section-ink">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div><span class="sec-eyebrow">Ommabop</span><h2 class="sec-title">Eng ko'p <em>sotilgan</em></h2></div>
+      <a href="{% url 'products:list' %}?sort=popular" class="link-arrow">Hammasi <i class="fa fa-long-arrow-right"></i></a>
+    </div>
+    <div class="rail">
+      {% for product in bestsellers|slice:":4" %}<div class="reveal" data-d="{{ forloop.counter0 }}">{% include 'components/book_card.html' %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- YANGI KELGANLAR -->
+{% if new_arrivals %}
+<section class="section">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div><span class="sec-eyebrow">Yangi kelganlar</span><h2 class="sec-title">Ro'yxatga qo'shilgan <em>yangi nashrlar</em></h2></div>
+      <a href="{% url 'products:list' %}?sort=new" class="link-arrow">Hammasi <i class="fa fa-long-arrow-right"></i></a>
+    </div>
+    <div class="rail">
+      {% for product in new_arrivals|slice:":4" %}<div class="reveal" data-d="{{ forloop.counter0 }}">{% include 'components/book_card.html' %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- QANDAY BUYURTMA QILISH -->
+<section class="section section-white">
+  <div class="container">
+    <div class="sec-head reveal"><div><span class="sec-eyebrow">Oddiy jarayon</span><h2 class="sec-title">4 qadamda <em>buyurtma bering</em></h2></div></div>
+    <div class="steps">
+      <div class="step reveal"><h4>Kitobni tanlang</h4><p>Katalogdan yoqqan kitobingizni toping va savatga qo'shing.</p></div>
+      <div class="step reveal" data-d="1"><h4>Ma'lumot kiriting</h4><p>Ism, telefon raqam va yetkazib berish punktini tanlang.</p></div>
+      <div class="step reveal" data-d="2"><h4>To'lov qiling</h4><p>Karta raqamiga o'tkazib, chekni saytga yuklang.</p></div>
+      <div class="step reveal" data-d="3"><h4>Kitobni oling</h4><p>Buyurtmangiz tasdiqlanib, tanlagan punktingizga yetkaziladi.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CHEGIRMALAR -->
+{% if discounted %}
+<section class="section section-dark">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div><span class="sec-eyebrow">Maxsus narxlar</span><h2 class="sec-title">Chegirmadagi <em>kitoblar</em></h2></div>
+      <a href="{% url 'products:list' %}?sort=discount" class="link-arrow">Hammasi <i class="fa fa-long-arrow-right"></i></a>
+    </div>
+    <div class="rail">
+      {% for product in discounted %}<div class="reveal" data-d="{{ forloop.counter0 }}">{% include 'components/book_card.html' %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- SHARHLAR -->
+<section class="section section-ink" {% if discounted %}style="padding-top:0"{% endif %}>
+  <div class="container">
+    <div class="sec-head reveal"><div><span class="sec-eyebrow">Mijozlar fikri</span><h2 class="sec-title">Bizga ishonganlar <em>nima deydi?</em></h2></div></div>
+    <div class="quotes">
+      <div class="quote reveal"><i class="fa fa-quote-left"></i><p>Kitoblar sifatli, original va o'z vaqtida yetib keldi. Buyurtma berish ham juda oson ekan. Rahmat!</p><footer><span class="ava">A</span><div><b>Azizbek R.</b><small>★★★★★</small></div></footer></div>
+      <div class="quote reveal" data-d="1"><i class="fa fa-quote-left"></i><p>Tanlov katta, narxlar hamyonbop. Mutaxassislar kitob tanlashda yaxshi maslahat berishdi.</p><footer><span class="ava">D</span><div><b>Dilnoza K.</b><small>★★★★★</small></div></footer></div>
+      <div class="quote reveal" data-d="2"><i class="fa fa-quote-left"></i><p>Samarqanddan buyurtma berdim, kitob uch kunda punktga keldi. Doimiy mijoz bo'laman.</p><footer><span class="ava">J</span><div><b>Jasur T.</b><small>★★★★★</small></div></footer></div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+{% if latest_blogs %}
+<section class="section">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div><span class="sec-eyebrow">Yangiliklar</span><h2 class="sec-title">O'qish uchun <em>foydali maqolalar</em></h2></div>
+      <a href="{% url 'blogs:list' %}" class="link-arrow">Barchasi <i class="fa fa-long-arrow-right"></i></a>
+    </div>
+    <div class="blog-grid">
+      {% for blog in latest_blogs %}
+      <a href="{% url 'blogs:blog_detail' blog.pk %}" class="blog-card reveal" data-d="{{ forloop.counter0 }}">
+        <div class="thumb"><img src="{{ blog.image.url }}" alt="{{ blog.title }}" loading="lazy"><span class="date">{{ blog.created_at|date:"d.m.Y" }}</span></div>
+        <div class="body"><h3>{{ blog.title }}</h3><p>{{ blog.description|truncatewords:18 }}</p><span class="more">Batafsil <i class="fa fa-long-arrow-right"></i></span></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-band reveal">
+      <div><h2>Qaysi kitobni o'qishni <span class="hl-italic">bilmayapsizmi?</span></h2><p>Qiziqishlaringizni ayting — mutaxassislarimiz sizga mos kitoblarni tanlab berishadi. Maslahat bepul.</p></div>
+      <div class="cta-actions">
+        <a href="tel:{{ SHOP.phone_href }}" class="btn btn-yellow btn-lg"><i class="fa fa-phone"></i> {{ SHOP.phone }}</a>
+        <a href="{% url 'pages:contact' %}" class="btn btn-ghost btn-lg">Xabar yozish</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

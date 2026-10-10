@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Kirish{% endblock %}
+{% block content %}
+<section class="auth">
+  {% include 'components/auth_side.html' %}
+  <div class="auth-main">
+    <div class="auth-box">
+      <h1>Xush kelibsiz!</h1>
+      <p>Hisobingizga kiring va buyurtmalaringizni boshqaring.</p>
+      {% if form.errors %}<div class="alert alert-error"><i class="fa fa-exclamation-circle"></i><span>Login yoki parol noto'g'ri. Qaytadan urinib ko'ring.</span></div>{% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+        <div class="field"><label class="label" for="u">Username yoki email</label>
+          <div class="input-icon"><i class="fa fa-user-o"></i><input class="input" id="u" name="username_or_email" value="{{ form.username_or_email.value|default:'' }}" autocomplete="username" required autofocus></div></div>
+        <div class="field"><label class="label" for="p">Parol</label>
+          <div class="input-icon"><i class="fa fa-lock"></i><input class="input" id="p" type="password" name="password" autocomplete="current-password" required><button type="button" class="pw-toggle" aria-label="Ko'rsatish"><i class="fa fa-eye"></i></button></div></div>
+        <div class="auth-row"><span></span><a href="{% url 'users:forget-password' %}">Parolni unutdingizmi?</a></div>
+        <button class="btn btn-yellow btn-lg btn-block" type="submit">Kirish <i class="fa fa-long-arrow-right"></i></button>
+      </form>
+      <p class="auth-foot">Hisobingiz yo'qmi? <a href="{% url 'users:register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">Ro'yxatdan o'ting</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

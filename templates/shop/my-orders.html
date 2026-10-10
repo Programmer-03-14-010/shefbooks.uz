@@ -1,0 +1,58 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Buyurtmalarim{% endblock %}
+
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Buyurtmalarim" hero_title="Mening <em>buyurtmalarim</em>" hero_text="Barcha buyurtmalaringiz holatini shu yerda kuzatib boring." %}
+<section class="page-body">
+  <div class="container" style="max-width:980px">
+    {% for order in orders %}
+    <article class="order-card">
+      <div class="order-head">
+        <div><h3>Buyurtma <span>#{{ order.id }}</span></h3><small>{{ order.created_at|date:"d.m.Y, H:i" }}</small></div>
+        <span class="status-pill st-{{ order.status }}">{{ order.get_status_display }}</span>
+      </div>
+      <div class="order-body">
+        {% if order.status != 'CANCELED' %}
+        <div class="timeline">
+          <div class="tl on {% if order.status == 'PENDING' %}now{% endif %}"><i class="fa fa-clock-o"></i>Kutilmoqda</div>
+          <div class="tl {% if order.status == 'ACCEPTED' or order.status == 'DELIVERING' or order.status == 'DELIVERED' %}on{% endif %} {% if order.status == 'ACCEPTED' %}now{% endif %}"><i class="fa fa-check"></i>Qabul qilindi</div>
+          <div class="tl {% if order.status == 'DELIVERING' or order.status == 'DELIVERED' %}on{% endif %} {% if order.status == 'DELIVERING' %}now{% endif %}"><i class="fa fa-truck"></i>Yetkazilmoqda</div>
+          <div class="tl {% if order.status == 'DELIVERED' %}on now{% endif %}"><i class="fa fa-gift"></i>Yetkazildi</div>
+        </div>
+        {% endif %}
+        <div class="order-items">
+          {% for item in order.items.all %}
+          <div class="oi">
+            {% if item.product %}<img src="{{ item.product.image1.url }}" alt="">{% else %}<span></span>{% endif %}
+            <div><b>{{ item.product_title }}</b><small>{{ item.product_quantity }} × {{ item.product_price|money }} so'm</small></div>
+            <div><b style="font-family:var(--font-body)">{{ item.product_price|money }} so'm</b></div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="order-meta">
+          <div><small>Qabul qiluvchi</small><b>{{ order.full_name }}</b></div>
+          <div><small>Telefon</small><b>{{ order.phone_number }}</b></div>
+          <div style="grid-column:span 2"><small>Yetkazish punkti</small><b>{{ order.address }}</b></div>
+        </div>
+      </div>
+      <div class="order-total">
+        <div>
+          <span class="pay-chip {% if order.is_paid %}ok{% else %}wait{% endif %}"><i class="fa {% if order.is_paid %}fa-check-circle{% else %}fa-hourglass-half{% endif %}"></i> {% if order.is_paid %}To'lov tasdiqlangan{% elif order.payment_receipt %}To'lov tekshirilmoqda{% else %}To'lov kutilmoqda{% endif %}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          {% if order.awaiting_receipt %}<a href="{% url 'orders:payment' order.pk %}" class="btn btn-yellow btn-sm"><i class="fa fa-cloud-upload"></i> Chekni yuklash</a>{% endif %}
+          <strong>{{ order.total_amount|money }} so'm</strong>
+        </div>
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+      <div class="ico"><i class="fa fa-list-alt"></i></div>
+      <h3>Hali buyurtmalar yo'q</h3><p>Birinchi kitobingizni buyurtma qiling — u shu yerda ko'rinadi.</p>
+      <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Kitoblarni ko'rish</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

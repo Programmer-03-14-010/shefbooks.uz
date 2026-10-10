@@ -1,0 +1,42 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Buyurtma qabul qilindi{% endblock %}
+
+{% block content %}
+<section class="page-body" style="padding-top:70px">
+  <div class="container">
+    {% include 'components/steps_bar.html' with step=4 %}
+    <div class="success">
+      <div class="success-ico"><i class="fa fa-check"></i></div>
+      <h2>Rahmat! Buyurtmangiz <span class="hl-italic">qabul qilindi</span></h2>
+      <p>Buyurtma raqami <b>#{{ order.id }}</b>. To'lov chekingizni tekshirib, tez orada siz bilan bog'lanamiz.</p>
+
+      <div class="success-card">
+        {% for item in order.items.all %}
+        <div class="oi" style="margin-bottom:10px">
+          {% if item.product %}<img src="{{ item.product.image1.url }}" alt="">{% else %}<span></span>{% endif %}
+          <div><b>{{ item.product_title }}</b><small>{{ item.product_quantity }} × {{ item.product_price|money }} so'm</small></div>
+          <div><b style="font-family:var(--font-body)">{{ item.product_price|money }}</b></div>
+        </div>
+        {% endfor %}
+        <div class="order-meta">
+          <div><small>Qabul qiluvchi</small><b>{{ order.full_name }}</b></div>
+          <div><small>Telefon</small><b>{{ order.phone_number }}</b></div>
+          <div><small>Punkt</small><b>{{ order.address }}</b></div>
+          <div><small>Jami</small><b>{{ order.total_amount|money }} so'm</b></div>
+        </div>
+      </div>
+
+      <div class="next-steps">
+        <div><i class="fa fa-search"></i>To'lovingiz tekshiriladi</div>
+        <div><i class="fa fa-phone"></i>Operator siz bilan bog'lanadi</div>
+        <div><i class="fa fa-truck"></i>Kitob punktga yuboriladi</div>
+      </div>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a href="{% url 'orders:my-orders' %}" class="btn btn-dark btn-lg">Buyurtmalarim</a>
+        <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Xaridni davom ettirish</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Savat{% endblock %}
+
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Savat" hero_title="Sizning <em>savatingiz</em>" %}
+<section class="page-body">
+  <div class="container">
+    {% if cart_items %}
+    {% include 'components/steps_bar.html' with step=1 %}
+    <div class="cart-layout">
+      <div class="cart-list">
+        {% for item in cart_items %}
+        {% with p=item.product %}
+        <div class="cart-item">
+          <a class="ci-img" href="{{ p.get_absolute_url }}"><img src="{{ p.image1.url }}" alt="{{ p.title }}"></a>
+          <div>
+            {% if p.author %}<div class="ci-author">{{ p.author }}</div>{% endif %}
+            <a class="ci-title" href="{{ p.get_absolute_url }}">{{ p.title }}</a>
+            <div class="ci-price">Narxi: <b>{{ p.price|money }} so'm</b></div>
+            {% if not p.is_available %}<div class="ci-warn"><i class="fa fa-exclamation-triangle"></i> Bu kitob hozir sotuvda yo'q — savatdan olib tashlang</div>
+            {% elif p.quantity <= 5 %}<div class="ci-warn"><i class="fa fa-fire"></i> Omborda {{ p.quantity }} ta qoldi</div>{% endif %}
+          </div>
+          <div class="ci-right">
+            <div class="qty">
+              <form method="post" action="{% url 'orders:decrease-quantity' p.pk %}">{% csrf_token %}<button type="submit" aria-label="Kamaytirish" {% if item.quantity <= 1 %}disabled{% endif %}>−</button></form>
+              <b>{{ item.quantity }}</b>
+              <form method="post" action="{% url 'orders:increase-quantity' p.pk %}">{% csrf_token %}<button type="submit" aria-label="Ko'paytirish" {% if item.quantity >= p.quantity %}disabled{% endif %}>+</button></form>
+            </div>
+            <div class="ci-sub">{{ item.subtotal|money }} <small style="font-size:13px">so'm</small></div>
+            <form method="post" action="{% url 'orders:add-or-remove-cart' p.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'orders:cart' %}"><button class="ci-remove" type="submit"><i class="fa fa-trash-o"></i> Olib tashlash</button></form>
+          </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+        <a href="{% url 'products:list' %}" class="link-arrow" style="justify-self:start;margin-top:8px"><i class="fa fa-long-arrow-left"></i> Xaridni davom ettirish</a>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Buyurtma xulosasi</h3>
+        <div class="sum-row"><span>Kitoblar ({{ cart_count }} ta)</span><b>{{ cart_total|money }} so'm</b></div>
+        <div class="sum-row"><span>Yetkazib berish</span><b>Punkt tanlangach</b></div>
+        <div class="sum-total"><span>Jami</span><strong>{{ cart_total|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
+        {% if has_unavailable %}
+          <button class="btn btn-yellow btn-lg btn-block" disabled>Avval mavjud bo'lmagan kitobni olib tashlang</button>
+        {% else %}
+          <a href="{% url 'orders:checkout' %}" class="btn btn-yellow btn-lg btn-block">Buyurtma berish <i class="fa fa-long-arrow-right"></i></a>
+        {% endif %}
+        <div class="assure">
+          <div><i class="fa fa-lock"></i> Ma'lumotlaringiz himoyalangan</div>
+          <div><i class="fa fa-truck"></i> BTS va UZPOST orqali yetkazib berish</div>
+          <div><i class="fa fa-phone"></i> Savollar bo'lsa: {{ SHOP.phone }}</div>
+        </div>
+      </aside>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="ico"><i class="fa fa-shopping-bag"></i></div>
+      <h3>Savatingiz hozircha bo'sh</h3>
+      <p>Sevimli kitoblaringizni tanlang — ular shu yerda saqlanadi.</p>
+      <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Kitoblarni ko'rish</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% load my_tags %}
+<article class="book-card">
+  <a href="{{ product.get_absolute_url }}" class="book-cover" aria-label="{{ product.title }}">
+    <img src="{{ product.image1.url }}" alt="{{ product.title }}" loading="lazy">
+    {% if product.image2 %}<img class="alt" src="{{ product.image2.url }}" alt="" loading="lazy">{% endif %}
+    <div class="book-badges">
+      {% if not product.is_available %}<span class="badge badge-out">Tugagan</span>
+      {% else %}
+        {% if product.discount_percent %}<span class="badge badge-sale">−{{ product.discount_percent }}%</span>{% endif %}
+        {% if product.is_new %}<span class="badge badge-new">Yangi</span>{% endif %}
+      {% endif %}
+    </div>
+  </a>
+  <form class="wish-form" method="post" action="{% url 'orders:add-or-remove-wishlist' product.pk %}" data-ajax="wish">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button type="submit" class="wish-btn {% if product.pk in wish_ids %}active{% endif %}" aria-label="Xohishlarga"><i class="fa fa-heart-o"></i></button>
+  </form>
+  <div class="book-info">
+    {% if product.author %}<div class="book-author">{{ product.author }}</div>{% endif %}
+    <h3 class="book-title"><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+    {% if product.reviews_count %}<div>{% stars product.avg_rating %}<span class="stars"><small>({{ product.reviews_count }})</small></span></div>{% endif %}
+    <div class="book-price">
+      <span class="price">{{ product.price|money }}<small>so'm</small></span>
+      {% if product.discount_percent %}<span class="price-old">{{ product.old_price|money }}</span>{% endif %}
+    </div>
+    {% if product.is_available and product.quantity <= 5 %}<div class="stock-low"><i class="fa fa-fire"></i> Faqat {{ product.quantity }} ta qoldi!</div>{% endif %}
+  </div>
+  {% if product.pk in cart_ids %}
+    <div class="add-form"><a class="add-btn in-cart" href="{% url 'orders:cart' %}"><i class="fa fa-check"></i> <span>Savatda · ko'rish</span></a></div>
+  {% else %}
+    <form class="add-form" method="post" action="{% url 'orders:add-or-remove-cart' product.pk %}" data-ajax="cart" data-cart-url="{% url 'orders:cart' %}">
+      {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button type="submit" class="add-btn" {% if not product.is_available %}disabled{% endif %}>
+        {% if product.is_available %}<i class="fa fa-shopping-bag"></i> <span>Savatga <span class="txt-long">qo'shish</span></span>{% else %}Sotuvda yo'q{% endif %}
+      </button>
+    </form>
+  {% endif %}
+</article>

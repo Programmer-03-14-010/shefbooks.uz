@@ -1,0 +1,108 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}{% if active_cat %}{{ active_cat.title }}{% elif query %}«{{ query }}» qidiruvi{% else %}Kitoblar katalogi{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <nav class="crumbs"><a href="{% url 'pages:home' %}">Bosh sahifa</a><i class="fa fa-angle-right"></i><span>Katalog</span></nav>
+    <h1>{% if active_cat %}{{ active_cat.title }}{% elif query %}«{{ query }}» <em>natijalari</em>{% else %}Kitoblar <em>katalogi</em>{% endif %}</h1>
+    <p>Sevimli kitobingizni toping: muallif, nashriyot yoki nom bo'yicha qidiring, narx va turkum bo'yicha saralang.</p>
+  </div>
+</section>
+
+<section class="page-body">
+  <div class="container shop-layout">
+
+    <!-- FILTRLAR -->
+    <aside class="filters" aria-label="Filtrlar">
+      <button class="btn btn-outline btn-sm" data-drawer-close style="display:none" id="close-filters"><i class="fa fa-times"></i> Yopish</button>
+
+      <div class="filter-card">
+        <div class="filter-title">Turkumlar</div>
+        <a class="cat-link {% if not active_cat %}active{% endif %}" href="{% qs_update request cat='' %}">Barcha kitoblar </a>
+        {% for parent in categories %}
+          <a class="cat-link {% if active_cat.pk == parent.pk %}active{% endif %}" href="{% qs_update request cat=parent.pk %}">{{ parent.title }} <small>{{ parent.product_count }}</small></a>
+          {% if parent.children.all %}
+          <div class="cat-children">
+            {% for child in parent.children.all %}<a class="cat-link {% if active_cat.pk == child.pk %}active{% endif %}" href="{% qs_update request cat=child.pk %}">{{ child.title }} <small>{{ child.product_count }}</small></a>{% endfor %}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <form class="filter-card" method="get" action="{% url 'products:list' %}">
+        {% if request.GET.cat %}<input type="hidden" name="cat" value="{{ request.GET.cat }}">{% endif %}
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
+        <div class="filter-title">Narx (so'm)</div>
+        <div class="price-inputs">
+          <input class="input" type="number" min="0" name="price_min" value="{{ request.GET.price_min }}" placeholder="{{ price_bounds.lo|default:0|floatformat:0 }}">
+          <span>—</span>
+          <input class="input" type="number" min="0" name="price_max" value="{{ request.GET.price_max }}" placeholder="{{ price_bounds.hi|default:0|floatformat:0 }}">
+        </div>
+        <div class="filter-title" style="margin-top:24px">Til</div>
+        <select class="select" name="lang" style="padding:12px 16px">
+          <option value="">Barcha tillar</option>
+          {% for code, label in languages %}<option value="{{ code }}" {% if request.GET.lang == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <label class="check" style="margin-top:16px"><input type="checkbox" name="available" value="1" {% if request.GET.available == '1' %}checked{% endif %}> Faqat sotuvda borlari</label>
+        <button class="btn btn-dark btn-block" type="submit">Qo'llash</button>
+      </form>
+    </aside>
+
+    <!-- NATIJALAR -->
+    <div>
+      <div class="toolbar">
+        <div style="display:flex;align-items:center;gap:14px">
+          <button class="btn btn-dark btn-sm filter-toggle" data-filters-open><i class="fa fa-sliders"></i> Filtrlar</button>
+          <div class="result-count"><b>{{ total_count }}</b> ta kitob topildi</div>
+        </div>
+        <form class="sort-wrap" method="get" action="{% url 'products:list' %}">
+          {% for k, v in request.GET.items %}{% if k != 'sort' and k != 'page' %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endif %}{% endfor %}
+          <span>Saralash:</span>
+          <select name="sort" data-autosubmit aria-label="Saralash">
+            {% for value, label in sort_options %}<option value="{{ value }}" {% if current_sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </form>
+      </div>
+
+      {% if has_filters %}
+      <div class="active-chips">
+        {% if active_cat %}<span class="chip">{{ active_cat.title }} <a href="{% qs_update request cat='' %}" aria-label="Olib tashlash"><i class="fa fa-times"></i></a></span>{% endif %}
+        {% if query %}<span class="chip">«{{ query }}» <a href="{% qs_update request q='' %}"><i class="fa fa-times"></i></a></span>{% endif %}
+        {% if request.GET.price_min or request.GET.price_max %}<span class="chip">Narx: {{ request.GET.price_min|default:'0' }} — {{ request.GET.price_max|default:'∞' }} <a href="{% qs_update request price_min='' price_max='' %}"><i class="fa fa-times"></i></a></span>{% endif %}
+        {% if request.GET.available == '1' %}<span class="chip">Sotuvda <a href="{% qs_update request available='' %}"><i class="fa fa-times"></i></a></span>{% endif %}
+        {% if request.GET.lang %}<span class="chip">Til: {{ request.GET.lang|upper }} <a href="{% qs_update request lang='' %}"><i class="fa fa-times"></i></a></span>{% endif %}
+        <a href="{% url 'products:list' %}" class="chip clear">Hammasini tozalash</a>
+      </div>
+      {% endif %}
+
+      {% if products %}
+        <div class="book-grid">
+          {% for product in products %}{% include 'components/book_card.html' %}{% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <nav class="pagination" aria-label="Sahifalar">
+          {% if page_obj.has_previous %}<a class="page-btn" href="{% qs_page request page_obj.previous_page_number %}" aria-label="Oldingi"><i class="fa fa-angle-left"></i></a>{% endif %}
+          {% for n in paginator.page_range %}
+            {% if n == page_obj.number %}<span class="page-btn active">{{ n }}</span>
+            {% elif n == 1 or n == paginator.num_pages or n >= page_obj.number|add:'-1' and n <= page_obj.number|add:'1' %}<a class="page-btn" href="{% qs_page request n %}">{{ n }}</a>
+            {% elif n == page_obj.number|add:'-2' or n == page_obj.number|add:'2' %}<span class="page-dots">…</span>{% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}<a class="page-btn" href="{% qs_page request page_obj.next_page_number %}" aria-label="Keyingi"><i class="fa fa-angle-right"></i></a>{% endif %}
+        </nav>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <div class="ico"><i class="fa fa-search"></i></div>
+          <h3>Hech narsa topilmadi</h3>
+          <p>Boshqa kalit so'z bilan qidirib ko'ring yoki filtrlarni tozalang.</p>
+          <a href="{% url 'products:list' %}" class="btn btn-yellow">Barcha kitoblarni ko'rish</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Ro'yxatdan o'tish{% endblock %}
+{% block content %}
+<section class="auth">
+  {% include 'components/auth_side.html' %}
+  <div class="auth-main">
+    <div class="auth-box">
+      <h1>Hisob yarating</h1>
+      <p>Bir daqiqada ro'yxatdan o'ting va buyurtma bering.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+        <div class="grid-2">
+          <div class="field"><label class="label" for="fn">Ism</label><input class="input" id="fn" name="first_name" value="{{ form_data.first_name|default:'' }}" required></div>
+          <div class="field"><label class="label" for="ln">Familiya</label><input class="input" id="ln" name="last_name" value="{{ form_data.last_name|default:'' }}" required></div>
+        </div>
+        <div class="field"><label class="label" for="em">Email</label><div class="input-icon"><i class="fa fa-envelope-o"></i><input class="input" id="em" type="email" name="email" value="{{ form_data.email|default:'' }}" required></div></div>
+        <div class="field"><label class="label" for="us">Username</label><div class="input-icon"><i class="fa fa-user-o"></i><input class="input" id="us" name="username" value="{{ form_data.username|default:'' }}" autocomplete="username" required></div></div>
+        <div class="grid-2">
+          <div class="field"><label class="label" for="p1">Parol</label><div class="input-icon"><input class="input" style="padding-left:18px" id="p1" type="password" name="password1" autocomplete="new-password" required><button type="button" class="pw-toggle" aria-label="Ko'rsatish"><i class="fa fa-eye"></i></button></div><div class="field-hint">Kamida 8 ta belgi</div></div>
+          <div class="field"><label class="label" for="p2">Parolni takrorlang</label><input class="input" id="p2" type="password" name="password2" autocomplete="new-password" required></div>
+        </div>
+        <button class="btn btn-yellow btn-lg btn-block" type="submit">Ro'yxatdan o'tish <i class="fa fa-long-arrow-right"></i></button>
+      </form>
+      <p class="auth-foot">Hisobingiz bormi? <a href="{% url 'users:login' %}">Kirish</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Xohishlarim{% endblock %}
+
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Xohishlar" hero_title="Mening <em>xohishlarim</em>" hero_text="Yoqqan kitoblaringizni shu yerda saqlang va vaqti kelganda buyurtma bering." %}
+<section class="page-body">
+  <div class="container">
+    <span id="wishlist-page-flag" hidden></span>
+    {% if products %}
+      <div class="book-grid">{% for product in products %}{% include 'components/book_card.html' %}{% endfor %}</div>
+      {% if is_paginated %}
+      <nav class="pagination">
+        {% if page_obj.has_previous %}<a class="page-btn" href="?page={{ page_obj.previous_page_number }}"><i class="fa fa-angle-left"></i></a>{% endif %}
+        {% for n in paginator.page_range %}{% if n == page_obj.number %}<span class="page-btn active">{{ n }}</span>{% else %}<a class="page-btn" href="?page={{ n }}">{{ n }}</a>{% endif %}{% endfor %}
+        {% if page_obj.has_next %}<a class="page-btn" href="?page={{ page_obj.next_page_number }}"><i class="fa fa-angle-right"></i></a>{% endif %}
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="empty-state">
+        <div class="ico"><i class="fa fa-heart-o"></i></div>
+        <h3>Xohishlar ro'yxati bo'sh</h3>
+        <p>Kitob kartochkasidagi yurakcha tugmasini bosib, yoqqan kitoblarni saqlang.</p>
+        <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Kitoblarni ko'rish</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

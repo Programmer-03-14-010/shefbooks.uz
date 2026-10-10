@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Biz haqimizda{% endblock %}
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Biz haqimizda" hero_title="Bilim sari <em>ishonchli yo'l</em>" hero_text="SHEFBOOKS — kitobsevarlar uchun yaratilgan onlayn do'kon." %}
+<section class="section">
+  <div class="container about-intro">
+    <img src="{% static 'img/other/background.jpg' %}" alt="Kitob javoni" class="reveal">
+    <div class="reveal" data-d="1">
+      <span class="sec-eyebrow">Biz kimmiz</span>
+      <h2 class="sec-title">Kitob — <em>hayot sabog'idir</em></h2>
+      <div class="prose" style="margin-top:20px">
+        <p>SHEFBOOKS tarix, adabiyot, din va biznesga oid saralangan kitoblarni qulay narxlarda taqdim etadi. Maqsadimiz — har bir o'quvchiga kerakli kitobni oson topish va uyiga yetkazib olish imkonini berish.</p>
+        <p style="margin-top:16px">Buyurtmalar butun O'zbekiston bo'ylab BTS Express va UZPOST punktlariga yetkaziladi. Savollaringiz bo'lsa, mutaxassislarimiz kitob tanlashda bepul yordam berishadi.</p>
+      </div>
+      <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg" style="margin-top:28px">Kitoblarni ko'rish</a>
+    </div>
+  </div>
+</section>
+<section class="section section-dark">
+  <div class="container"><div class="stat-row">
+    <div class="stat reveal"><b data-count="{{ books_total }}" data-suffix="+">{{ books_total }}+</b><span>Kitoblar</span></div>
+    <div class="stat reveal" data-d="1"><b data-count="14">14</b><span>Hudud</span></div>
+    <div class="stat reveal" data-d="2"><b data-count="592">592</b><span>Yetkazish punkti</span></div>
+    <div class="stat reveal" data-d="3"><b>24/7</b><span>Buyurtma qabuli</span></div>
+  </div></div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="sec-head"><div><span class="sec-eyebrow">Qadriyatlarimiz</span><h2 class="sec-title">Nega aynan <em>SHEFBOOKS?</em></h2></div></div>
+    <div class="values">
+      <div class="value reveal"><i class="fa fa-shield"></i><h4>Sifat kafolati</h4><p>Faqat original va sifatli nashrlarni taklif qilamiz.</p></div>
+      <div class="value reveal" data-d="1"><i class="fa fa-truck"></i><h4>Tez yetkazish</h4><p>Butun mamlakat bo'ylab ishonchli yetkazib berish.</p></div>
+      <div class="value reveal" data-d="2"><i class="fa fa-heart-o"></i><h4>Mijozga g'amxo'rlik</h4><p>Har bir buyurtma — bizning mas'uliyatimiz.</p></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

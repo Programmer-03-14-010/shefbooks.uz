@@ -1,0 +1,11 @@
+<section class="page-hero">
+  <div class="container">
+    <nav class="crumbs" aria-label="breadcrumb">
+      <a href="{% url 'pages:home' %}">Bosh sahifa</a><i class="fa fa-angle-right"></i>
+      {% if parent_label %}<a href="{{ parent_url }}">{{ parent_label }}</a><i class="fa fa-angle-right"></i>{% endif %}
+      <span>{{ crumb }}</span>
+    </nav>
+    <h1>{{ hero_title|safe }}</h1>
+    {% if hero_text %}<p>{{ hero_text }}</p>{% endif %}
+  </div>
+</section>

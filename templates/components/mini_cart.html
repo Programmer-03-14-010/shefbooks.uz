@@ -1,0 +1,23 @@
+{% load my_tags %}
+<div class="mc-head">Savatim <span>{{ cart_count }} ta kitob</span></div>
+{% if cart_header_items %}
+<div class="mc-list">
+  {% for e in cart_header_items %}
+  <a class="mc-item" href="{{ e.product.get_absolute_url }}">
+    <img src="{{ e.product.image1.url }}" alt="">
+    <div><div class="mc-title">{{ e.product.title }}</div><div class="mc-meta">{{ e.quantity }} × {{ e.product.price|money }} so'm</div></div>
+    <div class="mc-price">{{ e.subtotal|money }}</div>
+  </a>
+  {% endfor %}
+</div>
+<div class="mc-foot">
+  <div class="mc-total"><span>Jami:</span><span>{{ cart_total_header|money }} so'm</span></div>
+  <div class="mc-actions">
+    <a href="{% url 'orders:cart' %}" class="btn btn-outline btn-sm">Savat</a>
+    <a href="{% url 'orders:checkout' %}" class="btn btn-yellow btn-sm">Buyurtma</a>
+  </div>
+</div>
+{% else %}
+<div class="mc-empty"><i class="fa fa-book"></i>Savatingiz hozircha bo'sh<br><small>Yoqqan kitobingizni qo'shing</small></div>
+<div class="mc-foot"><a href="{% url 'products:list' %}" class="btn btn-yellow btn-block btn-sm">Kitoblarni ko'rish</a></div>
+{% endif %}

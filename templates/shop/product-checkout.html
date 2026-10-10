@@ -1,0 +1,94 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Buyurtmani rasmiylashtirish{% endblock %}
+
+{% block content %}
+{% url 'orders:cart' as cart_url %}
+{% include 'components/page_hero.html' with crumb="Buyurtma" parent_label="Savat" parent_url=cart_url hero_title="Buyurtmani <em>rasmiylashtiring</em>" hero_text="Ma'lumotlaringizni kiriting va yetkazib berish punktini tanlang." %}
+<section class="page-body">
+  <div class="container">
+    {% include 'components/steps_bar.html' with step=2 %}
+    <div id="checkout-config" data-logged="{% if request.user.is_authenticated %}1{% else %}0{% endif %}" data-login-url="{% url 'users:login' %}" hidden></div>
+
+    <form id="checkout-form" method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="address" id="address-value" value="{{ form.address.value|default:'' }}">
+      <div class="cart-layout">
+        <div>
+          <div class="form-card">
+            <div class="fc-title"><i class="fa fa-user"></i> Shaxsiy ma'lumotlar</div>
+            {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors.0 }}</div>{% endif %}
+            <div class="grid-2">
+              <div class="field"><label class="label" for="id_full_name">Ism va familiya</label>
+                <input class="input" id="id_full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" placeholder="Masalan: Azizbek Rahimov" required>
+                {% for e in form.full_name.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+              <div class="field"><label class="label" for="id_phone_number">Telefon raqam</label>
+                <input class="input" id="id_phone_number" name="phone_number" type="tel" value="{{ form.phone_number.value|default:'+998' }}" placeholder="+998 90 123 45 67" required>
+                {% for e in form.phone_number.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+            </div>
+            <div class="field" style="margin-bottom:0"><label class="label" for="id_email">Email <span style="color:var(--muted);text-transform:none;letter-spacing:0">(ixtiyoriy)</span></label>
+              <input class="input" id="id_email" name="email" type="email" value="{{ form.email.value|default:'' }}" placeholder="email@example.com">
+              {% for e in form.email.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+          </div>
+
+          <div class="form-card">
+            <div class="fc-title"><i class="fa fa-map-marker"></i> Yetkazib berish punkti</div>
+            {% for e in form.address.errors %}<div class="alert alert-error">{{ e }}</div>{% endfor %}
+            <div class="pick-filters">
+              <div class="seg">
+                <button type="button" class="active" data-type="all">Hammasi</button>
+                <button type="button" data-type="bts">BTS</button>
+                <button type="button" data-type="uzpost">UZPOST</button>
+              </div>
+              <select class="select" id="region-filter" aria-label="Hudud">
+                <option value="all">Barcha hududlar</option>
+              </select>
+            </div>
+            <div class="input-icon field" style="margin-bottom:14px"><i class="fa fa-search"></i><input class="input" id="location-search" type="search" placeholder="Shahar, tuman yoki manzil bo'yicha qidiring..."></div>
+            <div class="loc-count" id="locations-count"></div>
+            <div class="loc-list" id="locations-list"></div>
+            <div class="no-results" id="no-results">Hech narsa topilmadi. Boshqa so'z bilan urinib ko'ring.</div>
+            <div class="picked" id="picked-box"><i class="fa fa-map-marker"></i><span id="picked-text">Ro'yxatdan punktni tanlang</span></div>
+            <div class="uzpost-warning" id="uzpost-warning">
+              <i class="fa fa-exclamation-triangle"></i>
+              <div><h5>UZPOST tanlandi — pochta xizmati alohida to'lanadi</h5>
+              <p>Pochta orqali yuborish narxi <b id="uzpost-price-text">{{ SHOP.uzpost_fee }} so'm</b>. Kitob narxini to'lagach, pochta to'lovini ham alohida o'tkazib, ikkala chekni keyingi qadamda yuklaysiz.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="summary-card">
+          <h3>Sizning buyurtmangiz</h3>
+          <div class="sum-items">
+            {% for item in cart_items %}
+            <div class="sum-item"><img src="{{ item.product.image1.url }}" alt=""><div>{{ item.product.title|truncatechars:34 }}<small>{{ item.quantity }} × {{ item.product.price|money }}</small></div><b>{{ item.subtotal|money }}</b></div>
+            {% endfor %}
+          </div>
+          <div class="sum-row"><span>Kitoblar</span><b>{{ cart_total|money }} so'm</b></div>
+          <div class="sum-total"><span>Jami</span><strong>{{ cart_total|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
+          <button class="btn btn-yellow btn-lg btn-block" id="submit-btn" type="submit" disabled>To'lovga o'tish <i class="fa fa-long-arrow-right"></i></button>
+          <p id="submit-hint" style="text-align:center;margin-top:12px;font-size:13px;color:rgba(255,255,255,.55);font-weight:600">Avval yetkazib berish punktini tanlang</p>
+          <div class="assure"><div><i class="fa fa-lock"></i> Xavfsiz buyurtma</div><div><i class="fa fa-undo"></i> Savollar bo'lsa: {{ SHOP.phone }}</div></div>
+        </aside>
+      </div>
+    </form>
+  </div>
+</section>
+
+<div class="modal" id="login-modal">
+  <div class="modal-box">
+    <div class="ico"><i class="fa fa-lock"></i></div>
+    <h3>Tizimga kiring</h3><p>Buyurtma berish uchun avval hisobingizga kiring yoki ro'yxatdan o'ting.</p>
+    <div class="row"><button class="btn btn-yellow" id="go-login" type="button">Kirish</button><button class="btn btn-outline" type="button" onclick="shefModal('login-modal', false)">Bekor qilish</button></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pickup-data.js' %}"></script>
+<script>
+  // Hududlar ro'yxatini REGION_NAMES dan to'ldirish
+  (function(){ var s=document.getElementById('region-filter'); Object.keys(REGION_NAMES).forEach(function(k){ var o=document.createElement('option'); o.value=k; o.textContent=REGION_NAMES[k]; s.appendChild(o); }); })();
+</script>
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}

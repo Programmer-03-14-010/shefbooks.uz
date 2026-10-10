@@ -1,0 +1,12 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Sahifa topilmadi{% endblock %}
+{% block content %}
+<section class="notfound">
+  <div>
+    <div class="num">404</div>
+    <h2>Bu sahifa javondan tushib ketibdi</h2>
+    <p>Siz izlagan sahifa topilmadi yoki ko'chirilgan. Kitoblarimizni ko'rib chiqing!</p>
+    <a href="{% url 'pages:home' %}" class="btn btn-yellow btn-lg">Bosh sahifaga</a>
+  </div>
+</section>
+{% endblock %}

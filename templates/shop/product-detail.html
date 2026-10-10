@@ -1,0 +1,161 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}{{ product.title }}{% endblock %}
+{% block meta_desc %}{{ product.short_description|truncatechars:150 }}{% endblock %}
+
+{% block content %}
+<section class="page-hero" style="padding:36px 0 46px">
+  <div class="container">
+    <nav class="crumbs" style="margin:0"><a href="{% url 'pages:home' %}">Bosh sahifa</a><i class="fa fa-angle-right"></i><a href="{% url 'products:list' %}">Katalog</a><i class="fa fa-angle-right"></i><span>{{ product.title|truncatechars:50 }}</span></nav>
+  </div>
+</section>
+
+<section class="page-body" style="padding-top:30px">
+  <div class="container">
+    <div class="pd">
+      <!-- GALEREYA -->
+      <div class="gallery">
+        <div class="gallery-stage">
+          <img id="mainImg" src="{{ gallery.0 }}" alt="{{ product.title }}">
+        </div>
+        {% if gallery|length > 1 %}
+        <div class="gallery-thumbs">
+          {% for url in gallery %}<button type="button" data-large="{{ url }}" class="{% if forloop.first %}active{% endif %}" aria-label="Rasm {{ forloop.counter }}"><img src="{{ url }}" alt=""></button>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- MA'LUMOT -->
+      <div class="pd-info">
+        <div class="pd-badges">
+          {% if not product.is_available %}<span class="badge badge-out">Sotuvda yo'q</span>{% endif %}
+          {% if product.discount_percent %}<span class="badge badge-sale">−{{ product.discount_percent }}% chegirma</span>{% endif %}
+          {% if product.is_new %}<span class="badge badge-new">Yangi</span>{% endif %}
+          {% for c in product.categories.all|slice:":2" %}<a href="{% url 'products:list' %}?cat={{ c.pk }}" class="badge badge-hot">{{ c.title }}</a>{% endfor %}
+        </div>
+        <h1 class="pd-title">{{ product.title }}</h1>
+        {% if product.author %}<p class="pd-author">Muallif: <b>{{ product.author }}</b></p>{% endif %}
+        <div class="pd-rating">
+          {% stars rating_avg %}
+          {% if rating_count %}<span>{{ rating_avg }} · <a href="#reviews" onclick="document.querySelector('[data-tab=tab-reviews]').click()" style="border-bottom:2px solid var(--yellow)">{{ rating_count }} ta fikr</a></span>{% else %}<span>Hali fikr yo'q</span>{% endif %}
+        </div>
+
+        <div class="pd-pricebox">
+          <div style="position:relative;z-index:1">
+            {% if product.discount_percent %}<div class="pd-price-old">{{ product.old_price|money }} so'm <span class="save-tag">−{{ product.discount_percent }}%</span></div>{% endif %}
+            <div class="pd-price">{{ product.price|money }}<small>so'm</small></div>
+          </div>
+          {% if not product.is_available %}<span class="stock-pill no">Sotuvda yo'q</span>
+          {% elif product.quantity <= 5 %}<span class="stock-pill low">Faqat {{ product.quantity }} ta qoldi</span>
+          {% else %}<span class="stock-pill ok">Sotuvda mavjud</span>{% endif %}
+        </div>
+
+        <div class="pd-actions">
+          {% if product.pk in cart_ids %}
+            <a href="{% url 'orders:checkout' %}" class="btn btn-yellow btn-lg"><i class="fa fa-check"></i> Savatda — buyurtma berish</a>
+          {% else %}
+            <form method="post" action="{% url 'orders:add-or-remove-cart' product.pk %}" data-ajax="cart" data-cart-url="{% url 'orders:checkout' %}" data-class="btn btn-yellow btn-lg">
+              {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn btn-yellow btn-lg" {% if not product.is_available %}disabled{% endif %}><i class="fa fa-shopping-bag"></i> Savatga qo'shish</button>
+            </form>
+          {% endif %}
+          <form method="post" action="{% url 'orders:add-or-remove-wishlist' product.pk %}" data-ajax="wish">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="pd-wish {% if product.pk in wish_ids %}active{% endif %}" aria-label="Xohishlarga"><i class="fa fa-heart-o"></i></button>
+          </form>
+        </div>
+
+        <div class="pd-perks">
+          <div class="perk"><i class="fa fa-truck"></i>Butun O'zbekiston bo'ylab yetkazish</div>
+          <div class="perk"><i class="fa fa-shield"></i>Original va sifatli nashr</div>
+          <div class="perk"><i class="fa fa-headphones"></i>Maslahat: {{ SHOP.phone }}</div>
+        </div>
+
+        <p class="pd-short">{{ product.short_description }}</p>
+      </div>
+    </div>
+
+    <!-- TABLAR -->
+    <div class="tabs" data-tabs>
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="tab-desc">Tavsif</button>
+        <button class="tab-btn" data-tab="tab-specs">Xususiyatlari</button>
+        <button class="tab-btn" data-tab="tab-reviews" id="reviews">Fikrlar ({{ rating_count }})</button>
+      </div>
+
+      <div class="tab-pane active" id="tab-desc"><div class="prose">{{ product.long_description }}</div></div>
+
+      <div class="tab-pane" id="tab-specs">
+        <table class="spec-table">
+          {% if product.author %}<tr><th>Muallif</th><td>{{ product.author }}</td></tr>{% endif %}
+          {% if product.publisher %}<tr><th>Nashriyot</th><td>{{ product.publisher }}</td></tr>{% endif %}
+          <tr><th>Til</th><td>{{ product.get_language_display }}</td></tr>
+          {% if product.pages %}<tr><th>Sahifalar soni</th><td>{{ product.pages }}</td></tr>{% endif %}
+          {% if product.year %}<tr><th>Nashr yili</th><td>{{ product.year }}</td></tr>{% endif %}
+          {% if product.cover_type %}<tr><th>Muqova</th><td>{{ product.get_cover_type_display }}</td></tr>{% endif %}
+          {% if product.isbn %}<tr><th>ISBN</th><td>{{ product.isbn }}</td></tr>{% endif %}
+          <tr><th>Turkum</th><td>{% for c in product.categories.all %}{{ c.title }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>
+          <tr><th>Mavjudligi</th><td>{% if product.is_available %}{{ product.quantity }} ta{% else %}Sotuvda yo'q{% endif %}</td></tr>
+        </table>
+      </div>
+
+      <div class="tab-pane" id="tab-reviews">
+        <div class="review-wrap">
+          <div class="review-summary">
+            <div class="big">{{ rating_avg|default:"0" }}</div>
+            {% stars rating_avg %}
+            <small style="color:rgba(255,255,255,.6)">{{ rating_count }} ta fikr asosida</small>
+            <div style="margin-top:22px">
+              {% for star, n in rating_distribution.items %}
+              <div class="bar-row"><span>{{ star }} ★</span><div class="bar"><i style="width:{% if rating_count %}{% widthratio n rating_count 100 %}{% else %}0{% endif %}%"></i></div><span>{{ n }}</span></div>
+              {% endfor %}
+            </div>
+          </div>
+          <div>
+            {% if request.user.is_authenticated %}
+            <form class="review-form" method="post" action="{% url 'products:add-review' product.pk %}">
+              {% csrf_token %}
+              <h4>Fikringizni qoldiring</h4>
+              <div class="star-input">
+                {% for i in "54321" %}<input type="radio" id="r{{ i }}" name="rating" value="{{ i }}" {% if i == "5" %}checked{% endif %}><label for="r{{ i }}" title="{{ i }}">★</label>{% endfor %}
+              </div>
+              <div class="field"><textarea class="textarea" name="comment" maxlength="500" required placeholder="Kitob sizga qanday ta'sir qildi?" style="min-height:110px"></textarea></div>
+              <button class="btn btn-dark" type="submit">Yuborish</button>
+            </form>
+            {% else %}
+            <div class="alert alert-info"><i class="fa fa-info-circle"></i><span>Fikr qoldirish uchun <a href="{% url 'users:login' %}?next={{ request.path }}" style="text-decoration:underline">tizimga kiring</a>.</span></div>
+            {% endif %}
+
+            {% for r in reviews %}
+            <div class="review-card">
+              <header><span class="ava">{{ r.user.first_name|default:r.user.username|initial }}</span><div><b>{{ r.user.first_name|default:r.user.username }}</b><small>{{ r.created_at|date:"d.m.Y" }}</small></div>{% stars r.rating %}</header>
+              <p>{{ r.comment }}</p>
+            </div>
+            {% empty %}
+              <p style="color:var(--muted);font-weight:600">Bu kitobga hali fikr bildirilmagan. Birinchi bo'ling!</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if related_products %}
+    <div style="margin-top:90px">
+      <div class="sec-head"><div><span class="sec-eyebrow">Tavsiya</span><h2 class="sec-title">Sizga <em>yoqishi mumkin</em></h2></div></div>
+      <div class="rail">{% for product in related_products %}{% include 'components/book_card.html' %}{% endfor %}</div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if product.is_available %}
+<div class="buy-bar">
+  <div class="bb-price">{{ product.price|money }} <small style="font-size:12px">so'm</small></div>
+  {% if product.pk in cart_ids %}
+    <a href="{% url 'orders:checkout' %}" class="btn btn-yellow"><i class="fa fa-check"></i> Buyurtma berish</a>
+  {% else %}
+    <form method="post" action="{% url 'orders:add-or-remove-cart' product.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'orders:checkout' %}"><button type="submit" class="btn btn-yellow"><i class="fa fa-bolt"></i> Hoziroq buyurtma</button></form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Bog'lanish{% endblock %}
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Bog'lanish" hero_title="Biz bilan <em>bog'laning</em>" hero_text="Savol, taklif yoki kitob bo'yicha maslahat kerakmi? Yozing — tez orada javob beramiz." %}
+<section class="page-body"><div class="container">
+  <div class="contact-grid">
+    <div class="info-stack">
+      <a class="info-card" href="tel:{{ SHOP.phone_href }}"><i class="fa fa-phone"></i><div><small>Telefon</small><b>{{ SHOP.phone }}</b></div></a>
+      <a class="info-card" href="mailto:{{ SHOP.email }}"><i class="fa fa-envelope-o"></i><div><small>Email</small><b>{{ SHOP.email }}</b></div></a>
+      <div class="info-card"><i class="fa fa-clock-o"></i><div><small>Ish vaqti</small><b>24/7 — har kuni</b></div></div>
+      {% if SHOP.instagram %}<a class="info-card" href="{{ SHOP.instagram }}" target="_blank" rel="noopener"><i class="fa fa-instagram"></i><div><small>Instagram</small><b>@shefbooks</b></div></a>{% endif %}
+      {% if SHOP.telegram %}<a class="info-card" href="{{ SHOP.telegram }}" target="_blank" rel="noopener"><i class="fa fa-telegram"></i><div><small>Telegram</small><b>Yozish</b></div></a>{% endif %}
+    </div>
+    <form class="form-card" method="post" novalidate>
+      {% csrf_token %}
+      <div class="fc-title"><i class="fa fa-paper-plane"></i> Xabar yuboring</div>
+      {% if form.errors %}<div class="alert alert-error"><i class="fa fa-exclamation-circle"></i><span>Iltimos, barcha maydonlarni to'g'ri to'ldiring.</span></div>{% endif %}
+      <div class="grid-2">
+        <div class="field"><label class="label" for="id_full_name">Ism va familiya</label><input class="input" id="id_full_name" name="full_name" value="{{ form.full_name.value|default:'' }}" required></div>
+        <div class="field"><label class="label" for="id_email">Email</label><input class="input" id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" required></div>
+      </div>
+      <div class="field"><label class="label" for="id_subject">Mavzu</label><input class="input" id="id_subject" name="subject" value="{{ form.subject.value|default:'' }}" required></div>
+      <div class="field"><label class="label" for="id_message">Xabar</label><textarea class="textarea" id="id_message" name="message" required>{{ form.message.value|default:'' }}</textarea></div>
+      <button class="btn btn-yellow btn-lg" type="submit">Yuborish <i class="fa fa-paper-plane"></i></button>
+    </form>
+  </div>
+</div></section>
+{% endblock %}

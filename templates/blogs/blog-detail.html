@@ -1,0 +1,43 @@
+{% extends 'layouts/base.html' %}
+{% load my_tags %}
+{% block title %}{{ blog.title }}{% endblock %}
+{% block content %}
+{% url 'blogs:list' as blogs_url %}
+{% include 'components/page_hero.html' with crumb=blog.title|truncatechars:40 parent_label="Yangiliklar" parent_url=blogs_url hero_title="Maqola" %}
+<section class="page-body"><div class="container blog-layout">
+  <div>
+    <article class="article">
+      <img class="hero-img" src="{{ blog.image.url }}" alt="{{ blog.title }}">
+      <div class="a-body">
+        <div class="meta">
+          <span><i class="fa fa-calendar"></i>{{ blog.created_at|date:"d.m.Y" }}</span>
+          {% if blog.authors.all %}<span><i class="fa fa-user-o"></i>{% for a in blog.authors.all %}{{ a.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+          <span><i class="fa fa-comments-o"></i>{{ comments|length }} ta fikr</span>
+        </div>
+        <h1>{{ blog.title }}</h1>
+        <div class="prose">{{ blog.description }}</div>
+      </div>
+    </article>
+
+    <div class="form-card comments" style="margin-top:28px">
+      <h3>Fikrlar ({{ comments|length }})</h3>
+      {% for c in comments %}
+      <div class="comment"><span class="ava">{{ c.user.first_name|default:c.user.username|initial }}</span><div><b>{{ c.user.first_name|default:c.user.username }}</b><small>{{ c.created_at|date:"d.m.Y" }}</small><p>{{ c.comment }}</p></div></div>
+      {% empty %}<p style="color:var(--muted);font-weight:600">Hozircha fikrlar yo'q.</p>{% endfor %}
+      <form method="post" style="margin-top:26px">{% csrf_token %}
+        <div class="field"><label class="label" for="id_comment">Fikringiz</label><textarea class="textarea" id="id_comment" name="comment" maxlength="128" style="min-height:100px" required></textarea></div>
+        <button class="btn btn-dark" type="submit">Yuborish</button>
+        {% if not request.user.is_authenticated %}<span class="field-hint" style="margin-left:12px">Yuborish uchun tizimga kirishingiz kerak.</span>{% endif %}
+      </form>
+    </div>
+  </div>
+  <aside>
+    {% if related_blogs %}
+    <div class="side-card"><h4>Boshqa maqolalar</h4>
+      {% for r in related_blogs %}<a class="related" href="{% url 'blogs:blog_detail' r.pk %}"><img src="{{ r.image.url }}" alt=""><div><b>{{ r.title }}</b><small>{{ r.created_at|date:"d.m.Y" }}</small></div></a>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="side-card" style="background:var(--black);color:#fff;border:0"><h4 style="color:var(--yellow)">Kitob izlayapsizmi?</h4><p style="color:rgba(255,255,255,.7);margin-bottom:18px">Katalogimizdagi yangi nashrlar bilan tanishing.</p><a href="{% url 'products:list' %}" class="btn btn-yellow btn-block">Katalogga o'tish</a></div>
+  </aside>
+</div></section>
+{% endblock %}
