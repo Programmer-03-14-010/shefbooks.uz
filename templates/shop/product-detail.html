@@ -40,29 +40,15 @@
           {% if rating_count %}<span>{{ rating_avg }} · <a href="#reviews" onclick="document.querySelector('[data-tab=tab-reviews]').click()" style="border-bottom:2px solid var(--yellow)">{{ rating_count }} ta fikr</a></span>{% else %}<span>Hali fikr yo'q</span>{% endif %}
         </div>
 
-        <div class="pd-pricebox">
-          <div style="position:relative;z-index:1">
-            {% if product.discount_percent %}<div class="pd-price-old">{{ product.old_price|money }} so'm <span class="save-tag">−{{ product.discount_percent }}%</span></div>{% endif %}
-            <div class="pd-price">{{ product.price|money }}<small>so'm</small></div>
-          </div>
-          {% if not product.is_available %}<span class="stock-pill no">Sotuvda yo'q</span>
-          {% elif product.quantity <= 5 %}<span class="stock-pill low">Faqat {{ product.quantity }} ta qoldi</span>
-          {% else %}<span class="stock-pill ok">Sotuvda mavjud</span>{% endif %}
-        </div>
+        {% if offer %}{% include 'components/offer_banner.html' with mini=True %}{% endif %}
 
-        <div class="pd-actions">
-          {% if product.pk in cart_ids %}
-            <a href="{% url 'orders:checkout' %}" class="btn btn-yellow btn-lg"><i class="fa fa-check"></i> Savatda — buyurtma berish</a>
-          {% else %}
-            <form method="post" action="{% url 'orders:add-or-remove-cart' product.pk %}" data-ajax="cart" data-cart-url="{% url 'orders:checkout' %}" data-class="btn btn-yellow btn-lg">
-              {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" class="btn btn-yellow btn-lg" {% if not product.is_available %}disabled{% endif %}><i class="fa fa-shopping-bag"></i> Savatga qo'shish</button>
-            </form>
-          {% endif %}
-          <form method="post" action="{% url 'orders:add-or-remove-wishlist' product.pk %}" data-ajax="wish">
-            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button type="submit" class="pd-wish {% if product.pk in wish_ids %}active{% endif %}" aria-label="Xohishlarga"><i class="fa fa-heart-o"></i></button>
-          </form>
+        {% for it in owned_items %}
+        <div class="owned-box"><i class="fa fa-check-circle"></i> {% if it.format == 'audio' %}Audio kitob{% else %}E-kitob{% endif %} sizning kutubxonangizda<a class="btn btn-dark btn-sm" href="{% url 'orders:library' %}">Kutubxonamga o'tish</a></div>
+        {% endfor %}
+
+        <div data-buybox>
+          {% include 'components/fmt_picker.html' with uid='pd' %}
+          {% include 'components/buy_actions.html' with with_wish=True %}
         </div>
 
         <div class="pd-perks">
@@ -78,12 +64,25 @@
     <!-- TABLAR -->
     <div class="tabs" data-tabs>
       <div class="tab-nav">
-        <button class="tab-btn active" data-tab="tab-desc">Tavsif</button>
+        <button class="tab-btn active" data-tab="tab-desc">Sharh va Tavsif</button>
+        <button class="tab-btn" data-tab="tab-excerpt">Parchani o'qish</button>
+        <button class="tab-btn" data-tab="tab-toc">Mundarija</button>
         <button class="tab-btn" data-tab="tab-specs">Xususiyatlari</button>
         <button class="tab-btn" data-tab="tab-reviews" id="reviews">Fikrlar ({{ rating_count }})</button>
       </div>
 
       <div class="tab-pane active" id="tab-desc"><div class="prose">{{ product.long_description }}</div></div>
+
+      <div class="tab-pane" id="tab-excerpt">
+        {% if product.excerpt %}<div class="qv-quote" style="background:#fff;color:var(--text);border-color:var(--line);max-width:820px">{{ product.excerpt }}</div>
+        {% else %}<p class="prose">Bu kitobdan parcha hali qo'shilmagan.</p>{% endif %}
+        {% if product.audio_sample %}<div class="audio-card" style="max-width:820px"><b><i class="fa fa-headphones"></i> Audio parcha — tinglab ko'ring</b><audio controls preload="none" src="{{ product.audio_sample.url }}"></audio></div>{% endif %}
+      </div>
+
+      <div class="tab-pane" id="tab-toc">
+        {% if product.contents_list %}<ol class="contents-list" style="max-width:820px">{% for line in product.contents_list %}<li>{{ line }}</li>{% endfor %}</ol>
+        {% else %}<p class="prose">Mundarija tez orada qo'shiladi.</p>{% endif %}
+      </div>
 
       <div class="tab-pane" id="tab-specs">
         <table class="spec-table">
@@ -96,6 +95,7 @@
           {% if product.isbn %}<tr><th>ISBN</th><td>{{ product.isbn }}</td></tr>{% endif %}
           <tr><th>Turkum</th><td>{% for c in product.categories.all %}{{ c.title }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>
           <tr><th>Mavjudligi</th><td>{% if product.is_available %}{{ product.quantity }} ta{% else %}Sotuvda yo'q{% endif %}</td></tr>
+          <tr><th>Formatlar</th><td>{% for f in product.formats %}{{ f.label }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>
         </table>
       </div>
 
@@ -115,12 +115,12 @@
             {% if request.user.is_authenticated %}
             <form class="review-form" method="post" action="{% url 'products:add-review' product.pk %}">
               {% csrf_token %}
-              <h4>Fikringizni qoldiring</h4>
+              <h4>Fikringizni izoh qilib yozing</h4>
               <div class="star-input">
                 {% for i in "54321" %}<input type="radio" id="r{{ i }}" name="rating" value="{{ i }}" {% if i == "5" %}checked{% endif %}><label for="r{{ i }}" title="{{ i }}">★</label>{% endfor %}
               </div>
               <div class="field"><textarea class="textarea" name="comment" maxlength="500" required placeholder="Kitob sizga qanday ta'sir qildi?" style="min-height:110px"></textarea></div>
-              <button class="btn btn-dark" type="submit">Yuborish</button>
+              <button class="btn btn-dark" type="submit">Izoh qoldirish</button>
             </form>
             {% else %}
             <div class="alert alert-info"><i class="fa fa-info-circle"></i><span>Fikr qoldirish uchun <a href="{% url 'users:login' %}?next={{ request.path }}" style="text-decoration:underline">tizimga kiring</a>.</span></div>
@@ -128,7 +128,8 @@
 
             {% for r in reviews %}
             <div class="review-card">
-              <header><span class="ava">{{ r.user.first_name|default:r.user.username|initial }}</span><div><b>{{ r.user.first_name|default:r.user.username }}</b><small>{{ r.created_at|date:"d.m.Y" }}</small></div>{% stars r.rating %}</header>
+              <header><span class="ava">{{ r.user.first_name|default:r.user.username|initial }}</span><div><b>{{ r.user.first_name|default:r.user.username }}</b><small>{{ r.created_at|date:"d.m.Y, H:i" }}</small></div>{% stars r.rating %}
+                {% if request.user == r.user or request.user.is_staff %}<form class="review-del" method="post" action="{% url 'products:delete-review' product.pk r.pk %}" data-confirm="Fikrni o'chirasizmi?">{% csrf_token %}<button type="submit" title="O'chirish"><i class="fa fa-trash-o"></i></button></form>{% endif %}</header>
               <p>{{ r.comment }}</p>
             </div>
             {% empty %}

@@ -25,7 +25,7 @@
           {% for item in order.items.all %}
           <div class="oi">
             {% if item.product %}<img src="{{ item.product.image1.url }}" alt="">{% else %}<span></span>{% endif %}
-            <div><b>{{ item.product_title }}</b><small>{{ item.product_quantity }} × {{ item.product_price|money }} so'm</small></div>
+            <div><b>{{ item.product_title }}</b><small>{% if item.format != 'paper' %}<span class="fmt-badge" style="margin:0 6px 0 0">{{ item.format_label }}</span>{% endif %}{{ item.product_quantity }} × {{ item.product_price|money }} so'm</small></div>
             <div><b style="font-family:var(--font-body)">{{ item.product_price|money }} so'm</b></div>
           </div>
           {% endfor %}
@@ -33,7 +33,8 @@
         <div class="order-meta">
           <div><small>Qabul qiluvchi</small><b>{{ order.full_name }}</b></div>
           <div><small>Telefon</small><b>{{ order.phone_number }}</b></div>
-          <div style="grid-column:span 2"><small>Yetkazish punkti</small><b>{{ order.address }}</b></div>
+          {% if order.has_physical %}<div style="grid-column:span 2"><small>Yetkazish punkti</small><b>{{ order.address }}</b></div>{% endif %}
+          {% if order.discount_amount %}<div><small>Chegirma{% if order.promo_code %} ({{ order.promo_code }}){% endif %}</small><b>−{{ order.discount_amount|money }} so'm</b></div>{% endif %}
         </div>
       </div>
       <div class="order-total">
@@ -41,6 +42,7 @@
           <span class="pay-chip {% if order.is_paid %}ok{% else %}wait{% endif %}"><i class="fa {% if order.is_paid %}fa-check-circle{% else %}fa-hourglass-half{% endif %}"></i> {% if order.is_paid %}To'lov tasdiqlangan{% elif order.payment_receipt %}To'lov tekshirilmoqda{% else %}To'lov kutilmoqda{% endif %}</span>
         </div>
         <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          {% if order.has_digital and order.is_paid %}<a href="{% url 'orders:library' %}" class="btn btn-dark btn-sm"><i class="fa fa-headphones"></i> Kutubxonam</a>{% endif %}
           {% if order.awaiting_receipt %}<a href="{% url 'orders:payment' order.pk %}" class="btn btn-yellow btn-sm"><i class="fa fa-cloud-upload"></i> Chekni yuklash</a>{% endif %}
           <strong>{{ order.total_amount|money }} so'm</strong>
         </div>

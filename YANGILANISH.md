@@ -1,3 +1,47 @@
+# SHEFBOOKS — 2-yangilanish: promokod, vaqtli aksiya, formatlar, audio
+
+## Ishga tushirish (muhim)
+```
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+`migrate` yangi jadvallarni yaratadi va **SHEF15 (15%)** hamda **AKROMXOJA20 (20%)** promokodlarini qo'shadi.
+Ularni admin panelda **Promokodlar** bo'limidan o'zgartirish yoki o'chirish mumkin.
+
+## Admin panelda nimalar qilinadi
+**1. Promokod yaratish** — Promokodlar → Qo'shish. Foiz yoki aniq summa, minimal buyurtma summasi, umumiy limit, muddat, "bitta foydalanuvchi 1 marta" tanlanadi. Ishlatilgan soni avtomatik sanaladi.
+
+**2. Vaqtli aksiya (taymerli banner)** — Vaqtli aksiyalar → Qo'shish: nom, chegirma %, to'plamdagi kitoblar, boshlanish/tugash vaqti. Aksiya davomida bosh sahifada taymerli banner chiqadi.
+- "To'plamni olish" tugmasi barcha kitoblarni savatga soladi, chegirma savatda avtomatik qo'llanadi (barcha kitoblar savatda bo'lsa).
+- Bitta kitob olib tashlansa chegirma yo'qoladi va savatda "to'plamni to'ldiring" taklifi chiqadi.
+- Vaqt tugagach banner o'zi yo'qoladi.
+
+**3. Kitobga audio / e-kitob / parcha / mundarija** — Kitoblar → kitobni oching:
+- *Audio kitob*: narxni kiriting va faylni yuklang (mp3, m4a, wav...). Ixtiyoriy qisqa **audio parcha** hamma uchun tinglanadi.
+- *E-kitob*: narx + PDF/EPUB.
+- *Parcha* va *Mundarija* (har bo'lim yangi qatordan).
+Narx kiritilgan formatlar kitob sahifasida va "Tez ko'rish" oynasida tanlov sifatida paydo bo'ladi.
+
+**4. Fikrlar** — foydalanuvchi bir kitobga 5 tagacha izoh qoldiradi va o'zinikini o'chira oladi. Admin hamma izohlarni ko'radi/o'chiradi.
+
+## Xaridorlar uchun
+- Kitob kartochkasida **Tez ko'rish**: formatlar, sharh/tavsif, parcha, mundarija, savatga qo'shish.
+- Savatda **promokod** maydoni; chegirma avval to'plamga, keyin promokodga qo'llanadi.
+- E-kitob/audio sotib olinsa yetkazib berish punkti so'ralmaydi. Admin to'lovni tasdiqlagach (buyurtmada "To'langan" belgisi) fayllar **Kutubxonam** sahifasida ochiladi.
+
+## Xavfsizlik va server
+- To'liq audio va e-kitoblar `private_media/` papkasida saqlanadi, **ochiq URL yo'q**; faqat to'lovi tasdiqlangan egasi (yoki admin) ochadi. Veb-serverda (nginx) bu papkani hech qachon ochiq qilmang va zaxira nusxasiga qo'shing.
+- Katta audio yuklash uchun nginx'da `client_max_body_size 200M;` kabi limitni oshiring.
+- Admin sahifasida yuklangan audio/e-kitob yonidagi "Hozirgi fayl" havolasi ochilmaydi (fayl yopiq saqlangani uchun) — bu normal.
+
+## Telefon uchun moslik
+360, 390 va 430px kenglikda 11 ta asosiy sahifa va "Tez ko'rish" oynasi tekshirildi, gorizontal siljish yo'q.
+
+## Tuzatilgan xato
+Birinchi kitob savatga qo'shilganda sarlavhadagi savat soni 0 bo'lib qolardi (animatsiya skripti bilan to'qnashuv) — tuzatildi.
+
+---
+
 # SHEFBOOKS — yangi dizayn: o'rnatish yo'riqnomasi
 
 ## 1. Qanday o'rnatiladi

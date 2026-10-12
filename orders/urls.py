@@ -3,7 +3,8 @@ from django.urls import path
 from orders.views import (
     add_or_remove_cart, MyOrdersListView, WishlistListView, add_or_remove_wishlist,
     CartListView, CheckoutTemplateView, increase_quantity, decrease_quantity,
-    PaymentView, OrderSuccessView, mini_cart,
+    PaymentView, OrderSuccessView, mini_cart, apply_promo, remove_promo, add_bundle,
+    LibraryView, digital_file,
 )
 
 app_name = "orders"
@@ -19,5 +20,10 @@ urlpatterns = [
     path("increase-quantity/<int:pk>/", increase_quantity, name="increase-quantity"),
     path("decrease-quantity/<int:pk>/", decrease_quantity, name="decrease-quantity"),
     path("payment/<int:pk>/", PaymentView.as_view(), name="payment"),
+    path("promo/apply/", apply_promo, name="apply-promo"),
+    path("promo/remove/", remove_promo, name="remove-promo"),
+    path("bundle/<int:pk>/add/", add_bundle, name="add-bundle"),
+    path("library/", LibraryView.as_view(), name="library"),
+    path("library/file/<int:pk>/", digital_file, name="digital-file"),
     path("success/<int:pk>/", OrderSuccessView.as_view(), name="success"),
 ]

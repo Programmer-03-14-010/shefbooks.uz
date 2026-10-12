@@ -1,0 +1,25 @@
+{% load my_tags %}
+{% with f=product.formats.0 %}
+<div class="pd-pricebox">
+  <div style="position:relative;z-index:1">
+    <div class="pd-price-old" data-old {% if not f.old_price %}style="display:none"{% endif %}><span data-old-text>{{ f.old_price|money }} so'm</span> {% if product.discount_percent %}<span class="save-tag">−{{ product.discount_percent }}%</span>{% endif %}</div>
+    <div class="pd-price" data-now>{{ f.price|money }} so'm</div>
+  </div>
+  {% if not product.is_available %}<span class="stock-pill no" data-pill>Sotuvda yo'q</span>
+  {% elif product.quantity <= 5 %}<span class="stock-pill low" data-pill>Faqat {{ product.quantity }} ta qoldi</span>
+  {% else %}<span class="stock-pill ok" data-pill>Sotuvda mavjud</span>{% endif %}
+</div>
+<div class="buy-actions">
+  <form class="buy-form" method="post" action="{% url 'orders:add-or-remove-cart' product.pk %}" data-ajax="cart" data-keep data-cart-url="{% url 'orders:cart' %}">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="fmt" value="paper" data-fmt-input>
+    <button type="submit" class="btn btn-yellow btn-lg" data-buy-btn><i class="fa fa-shopping-bag"></i> <span>Savatga qo'shish</span></button>
+  </form>
+  <a href="{% url 'orders:cart' %}" class="btn btn-dark btn-lg hide" data-incart-link><i class="fa fa-check"></i> Savatda — buyurtma berish</a>
+  {% if with_wish %}
+  <form method="post" action="{% url 'orders:add-or-remove-wishlist' product.pk %}" data-ajax="wish">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button type="submit" class="pd-wish {% if product.pk in wish_ids %}active{% endif %}" aria-label="Xohishlarga"><i class="fa fa-heart-o"></i></button>
+  </form>
+  {% endif %}
+</div>
+{% endwith %}

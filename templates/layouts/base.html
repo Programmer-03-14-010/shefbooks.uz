@@ -62,6 +62,7 @@
           <div class="who">{{ request.user.first_name|default:request.user.username }}<small>{{ request.user.email }}</small></div>
           <a href="{% url 'users:account' %}"><i class="fa fa-user-o"></i> Profilim</a>
           <a href="{% url 'orders:my-orders' %}"><i class="fa fa-list-alt"></i> Buyurtmalarim</a>
+          <a href="{% url 'orders:library' %}"><i class="fa fa-headphones"></i> Kutubxonam</a>
           <a href="{% url 'orders:wishlist' %}"><i class="fa fa-heart-o"></i> Xohishlarim</a>
           <a href="{% url 'users:logout' %}"><i class="fa fa-sign-out"></i> Chiqish</a>
         </div>
@@ -117,6 +118,7 @@
   <div class="drawer-foot">
     {% if request.user.is_authenticated %}
       <a href="{% url 'orders:my-orders' %}" class="btn btn-yellow btn-block"><i class="fa fa-list-alt"></i> Buyurtmalarim</a>
+      <a href="{% url 'orders:library' %}" class="btn btn-ghost btn-block"><i class="fa fa-headphones"></i> Kutubxonam</a>
       <a href="{% url 'users:logout' %}" class="btn btn-ghost btn-block">Chiqish</a>
     {% else %}
       <a href="{% url 'users:login' %}" class="btn btn-yellow btn-block">Kirish</a>
@@ -190,6 +192,7 @@
   <a href="{% if request.user.is_authenticated %}{% url 'users:account' %}{% else %}{% url 'users:login' %}{% endif %}"><i class="fa fa-user-o"></i>Profil</a>
 </nav>
 
+<div class="qv-modal" id="qv-modal" aria-hidden="true"><div class="qv-box" role="dialog" aria-modal="true"><div class="qv-content"></div></div></div>
 <button class="to-top" aria-label="Tepaga"><i class="fa fa-angle-up"></i></button>
 <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 

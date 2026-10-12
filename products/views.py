@@ -3,11 +3,11 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count, Avg, Min, Max
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView
 
-from products.models import ProductModel, ProductCategoryModel, ProductCommentModel
+from products.models import ProductModel, ProductCategoryModel, ProductCommentModel, BundleOfferModel
 
 SORT_OPTIONS = [
     ('new', 'Yangi qo\'shilganlar'),
@@ -145,7 +145,15 @@ class ProductDetailView(DetailView):
         rating_stats = reviews.aggregate(avg=Avg('rating'), n=Count('id'))
         distribution = {i: reviews.filter(rating=i).count() for i in range(5, 0, -1)}
 
+        owned = []
+        if self.request.user.is_authenticated:
+            from orders.models import OrderItemModel
+            owned = list(OrderItemModel.objects.filter(
+                order__user=self.request.user, order__is_paid=True, product=product, format__in=['ebook', 'audio']
+            ).exclude(order__status='CANCELED'))
         context.update({
+            'offer': BundleOfferModel.running().filter(products=product).first(),
+            'owned_items': owned,
             'gallery': uniq,
             'related_products': related,
             'reviews': reviews[:20],
@@ -156,6 +164,9 @@ class ProductDetailView(DetailView):
             if product.pk in [int(i) for i in self.request.session.get('cart', [])] else 0,
         })
         return context
+
+
+MAX_COMMENTS_PER_PRODUCT = 5
 
 
 @login_required
@@ -171,10 +182,35 @@ def add_review(request, pk):
 
     if len(comment) < 3:
         messages.error(request, "Fikr juda qisqa. Kamida bir necha so'z yozing.")
+    elif ProductCommentModel.objects.filter(user=request.user, product=product).count() >= MAX_COMMENTS_PER_PRODUCT:
+        messages.warning(request, f"Bitta kitobga {MAX_COMMENTS_PER_PRODUCT} tadan ortiq fikr yozib bo'lmaydi.")
+    elif ProductCommentModel.objects.filter(user=request.user, product=product, comment=comment[:500]).exists():
+        messages.info(request, "Bu fikr allaqachon yuborilgan.")
     else:
-        ProductCommentModel.objects.update_or_create(
-            user=request.user, product=product,
-            defaults={'comment': comment[:500], 'rating': rating},
-        )
+        ProductCommentModel.objects.create(user=request.user, product=product, comment=comment[:500], rating=rating)
         messages.success(request, "Fikringiz uchun rahmat!")
     return redirect(product.get_absolute_url() + '#reviews')
+
+
+@login_required
+@require_POST
+def delete_review(request, pk, comment_id):
+    comment = get_object_or_404(ProductCommentModel, pk=comment_id, product_id=pk)
+    if comment.user_id == request.user.pk or request.user.is_staff:
+        comment.delete()
+        messages.success(request, "Fikr o'chirildi.")
+    return redirect(comment.product.get_absolute_url() + '#reviews')
+
+
+def quick_view(request, pk):
+    """Kitobning «tez ko'rish» oynasi uchun HTML bo'lak (AJAX)."""
+    product = get_object_or_404(ProductModel, pk=pk)
+    reviews = product.comments.select_related('user')
+    stats = reviews.aggregate(avg=Avg('rating'), n=Count('id'))
+    return render(request, 'components/quick_view.html', {
+        'product': product,
+        'reviews': reviews[:3],
+        'rating_avg': round(stats['avg'], 1) if stats['avg'] else 0,
+        'rating_count': stats['n'],
+        'offer': BundleOfferModel.running().filter(products=product).first(),
+    })

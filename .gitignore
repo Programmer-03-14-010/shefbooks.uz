@@ -164,4 +164,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 static
+private_media/
 
+Config/test_settings.py
+test_db.sqlite3

@@ -1,11 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.db import models
 from django.db.models import Avg
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from common.models import BaseModel
+from common.storage import private_storage
 
 
 UserModel = get_user_model()
@@ -123,6 +127,29 @@ class ProductModel(BaseModel):
     isbn = models.CharField("ISBN", max_length=32, blank=True)
     is_featured = models.BooleanField("Bosh sahifada ko'rsatish", default=False)
 
+    # ── Parcha va mundarija ──
+    excerpt = models.TextField("Parcha (kitobdan lavha)", blank=True)
+    table_of_contents = models.TextField("Mundarija", blank=True, help_text="Har bir bo'lim yangi qatordan yoziladi.")
+
+    # ── Raqamli formatlar ──
+    ebook_price = models.DecimalField("E-kitob narxi", max_digits=10, decimal_places=2, null=True, blank=True)
+    ebook_file = models.FileField(
+        "E-kitob fayli (PDF/EPUB)", upload_to='ebooks', storage=private_storage, blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'epub'])],
+        help_text="Faqat sotib olgan mijozlarga ko'rinadi."
+    )
+    audio_price = models.DecimalField("Audio kitob narxi", max_digits=10, decimal_places=2, null=True, blank=True)
+    audio_file = models.FileField(
+        "Audio kitob (to'liq)", upload_to='audiobooks', storage=private_storage, blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['mp3', 'm4a', 'wav', 'ogg', 'aac'])],
+        help_text="To'liq audio. Faqat sotib olgan mijozlar tinglay oladi."
+    )
+    audio_sample = models.FileField(
+        "Audio parcha (hamma uchun, ixtiyoriy)", upload_to='audio_samples', blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['mp3', 'm4a', 'wav', 'ogg', 'aac'])],
+        help_text="Qisqa namuna — kitob sahifasida hamma tinglashi mumkin."
+    )
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Kitob'
@@ -149,6 +176,49 @@ class ProductModel(BaseModel):
     @property
     def hover_image(self):
         return self.image2 if self.image2 else self.image1
+
+    @property
+    def has_ebook(self):
+        return bool(self.ebook_price and self.ebook_file)
+
+    @property
+    def has_audio(self):
+        return bool(self.audio_price and self.audio_file)
+
+    @property
+    def has_digital(self):
+        return self.has_ebook or self.has_audio
+
+    def format_available(self, fmt):
+        if fmt == 'ebook':
+            return self.has_ebook
+        if fmt == 'audio':
+            return self.has_audio
+        return self.is_available
+
+    def price_for(self, fmt='paper'):
+        if fmt == 'ebook' and self.ebook_price:
+            return self.ebook_price
+        if fmt == 'audio' and self.audio_price:
+            return self.audio_price
+        return self.price
+
+    @property
+    def formats(self):
+        """Kitob sahifasi va tez ko'rish oynasidagi format tugmalari."""
+        items = [{'code': 'paper', 'label': "Qog'oz", 'icon': 'fa-book', 'price': self.price,
+                  'old_price': self.old_price if self.discount_percent else None, 'available': self.is_available}]
+        if self.has_ebook:
+            items.append({'code': 'ebook', 'label': 'E-Book', 'icon': 'fa-tablet', 'price': self.ebook_price,
+                          'old_price': None, 'available': True})
+        if self.has_audio:
+            items.append({'code': 'audio', 'label': 'Audio', 'icon': 'fa-headphones', 'price': self.audio_price,
+                          'old_price': None, 'available': True})
+        return items
+
+    @property
+    def contents_list(self):
+        return [line.strip() for line in self.table_of_contents.splitlines() if line.strip()]
 
     @property
     def is_available(self):
@@ -206,3 +276,59 @@ class ProductCommentModel(BaseModel):
 class ProductImageModel(models.Model):
     image = models.ImageField(upload_to='products', verbose_name=_('image'))
     product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, related_name='images', verbose_name='product')
+
+
+class BundleOfferModel(BaseModel):
+    """Vaqt bilan cheklangan aksiya: bir nechta kitobdan iborat to'plam, to'plamga chegirma."""
+    label = models.CharField("Yorliq", max_length=64, default="Hafta aksiyasi")
+    title = models.CharField("Aksiya nomi", max_length=160, help_text='Masalan: "Muvaffaqiyatli Shaxs" 3 talik Kitob To\'plami')
+    discount_percent = models.PositiveSmallIntegerField(
+        "Chegirma (%)", validators=[MinValueValidator(1), MaxValueValidator(90)], default=35
+    )
+    products = models.ManyToManyField(ProductModel, related_name='bundle_offers', verbose_name="To'plamdagi kitoblar")
+    starts_at = models.DateTimeField("Boshlanishi", default=timezone.now)
+    ends_at = models.DateTimeField("Tugashi")
+    is_active = models.BooleanField("Faol", default=True)
+
+    class Meta:
+        ordering = ['-ends_at']
+        verbose_name = "Vaqtli aksiya (to'plam)"
+        verbose_name_plural = "Vaqtli aksiyalar (to'plamlar)"
+
+    def __str__(self):
+        return self.title
+
+    @classmethod
+    def running(cls):
+        now = timezone.now()
+        return cls.objects.filter(is_active=True, starts_at__lte=now, ends_at__gt=now).prefetch_related('products')
+
+    @property
+    def is_running(self):
+        now = timezone.now()
+        return self.is_active and self.starts_at <= now < self.ends_at
+
+    @property
+    def book_list(self):
+        return list(self.products.all())
+
+    @property
+    def books_line(self):
+        return ' + '.join(p.title for p in self.book_list)
+
+    @property
+    def original_total(self):
+        return sum((p.price for p in self.book_list), Decimal('0'))
+
+    @property
+    def saving(self):
+        return (self.original_total * self.discount_percent / Decimal('100')).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+
+    @property
+    def bundle_price(self):
+        return self.original_total - self.saving
+
+    @property
+    def in_stock(self):
+        books = self.book_list
+        return bool(books) and all(p.is_available for p in books)

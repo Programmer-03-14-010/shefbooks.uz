@@ -8,7 +8,7 @@
 <section class="page-body">
   <div class="container">
     {% include 'components/steps_bar.html' with step=2 %}
-    <div id="checkout-config" data-logged="{% if request.user.is_authenticated %}1{% else %}0{% endif %}" data-login-url="{% url 'users:login' %}" hidden></div>
+    <div id="checkout-config" data-needs-address="{% if cart.has_paper %}1{% else %}0{% endif %}" data-logged="{% if request.user.is_authenticated %}1{% else %}0{% endif %}" data-login-url="{% url 'users:login' %}" hidden></div>
 
     <form id="checkout-form" method="post" novalidate>
       {% csrf_token %}
@@ -31,6 +31,7 @@
               {% for e in form.email.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
           </div>
 
+          {% if cart.has_paper %}
           <div class="form-card">
             <div class="fc-title"><i class="fa fa-map-marker"></i> Yetkazib berish punkti</div>
             {% for e in form.address.errors %}<div class="alert alert-error">{{ e }}</div>{% endfor %}
@@ -55,19 +56,25 @@
               <p>Pochta orqali yuborish narxi <b id="uzpost-price-text">{{ SHOP.uzpost_fee }} so'm</b>. Kitob narxini to'lagach, pochta to'lovini ham alohida o'tkazib, ikkala chekni keyingi qadamda yuklaysiz.</p></div>
             </div>
           </div>
+          {% else %}
+          <div class="form-card"><div class="fc-title"><i class="fa fa-bolt"></i> Raqamli buyurtma</div>
+            <p style="color:var(--muted);font-weight:600">Savatingizda faqat e-kitob / audio kitoblar bor — yetkazib berish punkti kerak emas. To'lov tasdiqlangach kitoblar «Kutubxonam» bo'limida ochiladi.</p></div>
+          {% endif %}
         </div>
 
         <aside class="summary-card">
           <h3>Sizning buyurtmangiz</h3>
           <div class="sum-items">
             {% for item in cart_items %}
-            <div class="sum-item"><img src="{{ item.product.image1.url }}" alt=""><div>{{ item.product.title|truncatechars:34 }}<small>{{ item.quantity }} × {{ item.product.price|money }}</small></div><b>{{ item.subtotal|money }}</b></div>
+            <div class="sum-item"><img src="{{ item.product.image1.url }}" alt=""><div>{{ item.product.title|truncatechars:34 }}<small>{% if item.format != 'paper' %}{{ item.format_label }} · {% endif %}{{ item.quantity }} × {{ item.unit_price|money }}</small></div><b>{{ item.subtotal|money }}</b></div>
             {% endfor %}
           </div>
-          <div class="sum-row"><span>Kitoblar</span><b>{{ cart_total|money }} so'm</b></div>
-          <div class="sum-total"><span>Jami</span><strong>{{ cart_total|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
-          <button class="btn btn-yellow btn-lg btn-block" id="submit-btn" type="submit" disabled>To'lovga o'tish <i class="fa fa-long-arrow-right"></i></button>
-          <p id="submit-hint" style="text-align:center;margin-top:12px;font-size:13px;color:rgba(255,255,255,.55);font-weight:600">Avval yetkazib berish punktini tanlang</p>
+          <div class="sum-row"><span>Kitoblar</span><b>{{ cart.subtotal|money }} so'm</b></div>
+          {% if cart.bundle_discount %}<div class="sum-row discount"><span>To'plam chegirmasi</span><b>−{{ cart.bundle_discount|money }} so'm</b></div>{% endif %}
+          {% if cart.promo_discount %}<div class="sum-row discount"><span>Promokod ({{ cart.promo.code }})</span><b>−{{ cart.promo_discount|money }} so'm</b></div>{% endif %}
+          <div class="sum-total"><span>Jami</span><strong>{{ cart.total|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
+          <button class="btn btn-yellow btn-lg btn-block" id="submit-btn" type="submit" {% if cart.has_paper %}disabled{% endif %}>To'lovga o'tish <i class="fa fa-long-arrow-right"></i></button>
+          <p id="submit-hint" style="text-align:center;margin-top:12px;font-size:13px;color:rgba(255,255,255,.55);font-weight:600">{% if cart.has_paper %}Avval yetkazib berish punktini tanlang{% else %}Hammasi tayyor{% endif %}</p>
           <div class="assure"><div><i class="fa fa-lock"></i> Xavfsiz buyurtma</div><div><i class="fa fa-undo"></i> Savollar bo'lsa: {{ SHOP.phone }}</div></div>
         </aside>
       </div>
@@ -85,10 +92,14 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/pickup-data.js' %}"></script>
+{% if cart.has_paper %}<script src="{% static 'js/pickup-data.js' %}"></script>
 <script>
   // Hududlar ro'yxatini REGION_NAMES dan to'ldirish
   (function(){ var s=document.getElementById('region-filter'); Object.keys(REGION_NAMES).forEach(function(k){ var o=document.createElement('option'); o.value=k; o.textContent=REGION_NAMES[k]; s.appendChild(o); }); })();
 </script>
-<script src="{% static 'js/checkout.js' %}"></script>
+<script src="{% static 'js/checkout.js' %}"></script>{% endif %}
+{% if not cart.has_paper %}<script>
+document.getElementById('checkout-form').addEventListener('submit',function(e){var c=document.getElementById('checkout-config');if(c.getAttribute('data-logged')!=='1'){e.preventDefault();shefModal('login-modal',true);}});
+var g=document.getElementById('go-login');if(g)g.addEventListener('click',function(){location.href=document.getElementById('checkout-config').getAttribute('data-login-url')+'?next='+encodeURIComponent(location.pathname);});
+</script>{% endif %}
 {% endblock %}

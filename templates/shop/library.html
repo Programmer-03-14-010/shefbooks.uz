@@ -1,0 +1,34 @@
+{% extends 'layouts/base.html' %}
+{% load static my_tags %}
+{% block title %}Kutubxonam{% endblock %}
+{% block content %}
+{% include 'components/page_hero.html' with crumb="Kutubxonam" hero_title="Mening <em>kutubxonam</em>" hero_text="Sotib olgan e-kitob va audio kitoblaringiz shu yerda." %}
+<section class="page-body"><div class="container">
+  <div class="lib-grid">
+    {% for e in entries %}
+    <article class="lib-card">
+      {% if e.product %}<img src="{{ e.product.image1.url }}" alt="">{% else %}<span></span>{% endif %}
+      <div>
+        <span class="fmt-badge"><i class="fa {% if e.format == 'audio' %}fa-headphones{% else %}fa-tablet{% endif %}"></i> {{ e.format_label }}</span>
+        <h3>{{ e.product_title }}</h3>
+        <small style="color:var(--muted);font-weight:600">Buyurtma #{{ e.order.id }} · {{ e.order.created_at|date:"d.m.Y" }}</small>
+        {% if e.order.is_paid %}
+          {% if e.format == 'audio' %}
+            <audio controls preload="none" controlsList="nodownload" src="{% url 'orders:digital-file' e.pk %}"></audio>
+          {% else %}
+            <div class="lib-actions">
+              <a class="btn btn-yellow btn-sm" target="_blank" rel="noopener" href="{% url 'orders:digital-file' e.pk %}"><i class="fa fa-book"></i> O'qish / Yuklab olish</a>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="lib-actions"><span class="pay-chip wait"><i class="fa fa-hourglass-half"></i> To'lov tekshirilmoqda — tasdiqlangach ochiladi</span>
+          {% if e.order.awaiting_receipt %}<a class="btn btn-yellow btn-sm" href="{% url 'orders:payment' e.order.pk %}">Chekni yuklash</a>{% endif %}</div>
+        {% endif %}
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state"><div class="ico"><i class="fa fa-headphones"></i></div><h3>Kutubxonangiz hozircha bo'sh</h3><p>E-kitob yoki audio formatni tanlab xarid qiling — kitoblar shu yerda ochiladi.</p><a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Kitoblarni ko'rish</a></div>
+    {% endfor %}
+  </div>
+</div></section>
+{% endblock %}

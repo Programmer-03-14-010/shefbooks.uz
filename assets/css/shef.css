@@ -423,7 +423,8 @@ body.drawer-open { overflow: hidden; }
 .book-card:hover { transform: translateY(-8px); box-shadow: var(--shadow); border-color: var(--yellow); }
 .section-dark .book-card, .section-ink .book-card { background: var(--ink-2); color: #fff; box-shadow: none; border-color: var(--line-dark); }
 .section-dark .book-card:hover, .section-ink .book-card:hover { border-color: var(--yellow); }
-.book-cover { position: relative; display: block; aspect-ratio: 3 / 4.15; border-radius: 6px 12px 12px 6px; overflow: hidden; background: var(--cream-2); box-shadow: -5px 10px 22px rgba(20, 16, 0, .22); margin: 4px 6px 18px; }
+.book-cover { position: relative; display: block; aspect-ratio: 3 / 4.15; border-radius: 6px 12px 12px 6px; overflow: hidden; background: var(--cream-2); box-shadow: -5px 10px 22px rgba(20, 16, 0, .22); margin: 0; }
+.cover-wrap { position: relative; margin: 4px 6px 18px; }
 .book-cover::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: linear-gradient(90deg, rgba(0, 0, 0, .28), rgba(255, 255, 255, .12) 60%, transparent); z-index: 3; pointer-events: none; }
 .book-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .5s, transform .8s var(--ease); }
 .book-cover .alt { opacity: 0; }
@@ -878,7 +879,7 @@ a.page-btn:hover { background: var(--yellow); border-color: var(--yellow); trans
   .section { padding: 48px 0; }
   .rail, .book-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .book-card { padding: 10px 10px 16px; border-radius: 16px; } .book-title { font-size: 15.5px; } .price { font-size: 17px; } .book-info, .add-form { padding: 0 4px; } .add-btn { padding: 11px 8px; font-size: 13px; } .add-btn span.txt-long { display: none; }
-  .book-cover { margin: 2px 2px 14px; } .wish-btn { width: 36px; height: 36px; font-size: 15px; }
+  .cover-wrap { margin: 2px 2px 14px; } .wish-btn { width: 36px; height: 36px; font-size: 15px; }
   .cat-grid, .quotes, .blog-grid, .values, .steps { grid-template-columns: 1fr; }
   .cat-tile { min-height: 150px; padding: 26px 24px; }
   .footer-grid { grid-template-columns: 1fr; padding: 48px 0 32px; }
@@ -903,3 +904,170 @@ a.page-btn:hover { background: var(--yellow); border-color: var(--yellow); trans
 .otp-boxes { display: flex; gap: 10px; justify-content: center; margin: 8px 0 26px; }
 .otp-digit { width: 52px; height: 62px; text-align: center; font-size: 26px; font-weight: 800; border-radius: 14px; border: 2px solid var(--line); background: #fff; font-family: var(--font-body); transition: all .2s; }
 .otp-digit:focus { outline: none; border-color: var(--black); box-shadow: 0 0 0 5px rgba(255, 196, 0, .45); transform: translateY(-3px); }
+
+/* ==========================================================================
+   17. YANGI FUNKSIYALAR: aksiya, tez ko'rish, formatlar, promokod, kutubxona
+   ========================================================================== */
+
+/* --- Vaqtli aksiya (to'plam) --- */
+.offer-wrap { padding: 36px 0 0; }
+.offer { display: grid; grid-template-columns: auto 1fr auto auto; gap: 28px; align-items: center; background: var(--black); color: #fff; border: 1px solid rgba(255, 196, 0, .35); border-radius: var(--r-xl); padding: 26px 34px; position: relative; overflow: hidden; isolation: isolate; }
+.offer::before { content: ""; position: absolute; width: 380px; height: 380px; left: -140px; top: -200px; background: radial-gradient(circle, rgba(255, 196, 0, .28), transparent 65%); z-index: -1; }
+.offer-ico { width: 84px; height: 84px; border-radius: 22px; background: rgba(255, 196, 0, .12); border: 1px solid rgba(255, 196, 0, .45); display: grid; place-items: center; color: var(--yellow); font-size: 38px; }
+.offer-text small { color: var(--yellow); font-weight: 800; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; }
+.offer-text h3 { font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 30px); margin: 6px 0 4px; line-height: 1.2; }
+.offer-text p { color: rgba(255, 255, 255, .6); font-size: 14.5px; }
+.offer-books { display: flex; margin-top: 12px; }
+.offer-books img { width: 38px; height: 52px; object-fit: cover; border-radius: 4px; border: 2px solid var(--black); margin-right: -10px; box-shadow: 0 4px 10px rgba(0, 0, 0, .5); }
+.countdown { display: flex; align-items: center; gap: 8px; }
+.cd-box { min-width: 70px; padding: 10px 6px 8px; text-align: center; border: 1px solid rgba(255, 196, 0, .35); border-radius: 14px; background: var(--ink); }
+.cd-box b { display: block; font-family: var(--font-display); font-size: 30px; line-height: 1.1; color: var(--yellow); font-variant-numeric: tabular-nums; }
+.cd-box span { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: rgba(255, 255, 255, .6); }
+.cd-sep { color: var(--yellow); font-weight: 800; font-size: 22px; }
+.cd-box.is-days { display: none; } .cd-box.is-days.show, .cd-box.is-days.show + .cd-sep { display: block; }
+.offer-cta { white-space: normal; }
+.offer-mini { grid-template-columns: 1fr auto; gap: 16px; padding: 18px 22px; border-radius: var(--r-lg); margin-bottom: 22px; }
+.offer-mini .offer-ico, .offer-mini .offer-books, .offer-mini .countdown { display: none; }
+.offer-mini h3 { font-size: 18px; margin: 2px 0; }
+.offer-mini .offer-text p { display: none; }
+.offer-mini .btn { padding: 11px 20px; font-size: 14px; }
+.offer.ended { opacity: .5; pointer-events: none; }
+
+/* --- Format tanlash --- */
+.fmt-label { font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.fmt-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+.fmt-picker.single { display: none; }
+.fmt { position: relative; cursor: pointer; }
+.fmt input { position: absolute; opacity: 0; pointer-events: none; }
+.fmt span { display: grid; justify-items: center; gap: 6px; padding: 14px 8px; border-radius: 14px; border: 2px solid var(--line); background: #fff; font-weight: 800; font-size: 14px; transition: all .2s var(--ease); height: 100%; }
+.fmt span i { font-size: 20px; color: var(--muted); transition: color .2s; }
+.fmt:hover span { transform: translateY(-2px); border-color: var(--black); }
+.fmt input:checked + span { border-color: var(--yellow); background: var(--yellow-soft); box-shadow: 0 0 0 3px rgba(255, 196, 0, .35); }
+.fmt input:checked + span i { color: var(--black); }
+.fmt input:focus-visible + span { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.fmt small { font-weight: 700; color: var(--muted); font-size: 12px; }
+.buy-actions { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: stretch; }
+.buy-actions form, .buy-actions > a { margin: 0; }
+.buy-actions .btn-lg { width: 100%; }
+.buy-actions [data-incart-link] { grid-column: 1; }
+.pd-pricebox .pd-price small { margin-left: 6px; }
+.fmt-note { margin: -4px 0 18px; font-size: 13.5px; color: var(--muted); font-weight: 600; display: none; gap: 10px; align-items: flex-start; }
+.fmt-note.show { display: flex; } .fmt-note i { color: var(--yellow-3); margin-top: 3px; }
+
+/* --- Tez ko'rish tugmasi va oynasi --- */
+.qv-btn { position: absolute; left: 50%; bottom: 12px; transform: translate(-50%, 12px); z-index: 6; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; border: 0; background: rgba(9, 9, 10, .92); color: var(--yellow); font-weight: 800; font-size: 12.5px; white-space: nowrap; opacity: 0; transition: all .3s var(--ease); backdrop-filter: blur(4px); }
+.book-card:hover .qv-btn, .qv-btn:focus-visible { opacity: 1; transform: translate(-50%, 0); }
+.qv-btn:hover { background: var(--yellow); color: var(--black); }
+@media (hover: none) { .qv-btn { opacity: 1; transform: translate(-50%, 0); padding: 7px 12px; font-size: 11.5px; bottom: 8px; } }
+
+.qv-modal { position: fixed; inset: 0; z-index: 2600; display: grid; place-items: center; padding: 24px; background: rgba(0, 0, 0, .72); backdrop-filter: blur(5px); opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; }
+.qv-modal.show { opacity: 1; visibility: visible; }
+body.qv-open { overflow: hidden; }
+.qv-box { width: min(1080px, 100%); max-height: calc(100vh - 48px); overflow: auto; background: var(--black); color: #fff; border-radius: var(--r-xl); border: 1px solid rgba(255, 196, 0, .25); box-shadow: var(--shadow-lg); transform: translateY(24px) scale(.97); transition: transform .4s var(--ease); scrollbar-width: thin; }
+.qv-modal.show .qv-box { transform: none; }
+.qv-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 1px solid var(--line-dark); position: sticky; top: 0; background: var(--black); z-index: 2; }
+.qv-head b { color: var(--yellow); letter-spacing: .08em; text-transform: uppercase; font-size: 14px; }
+.qv-grid { display: grid; grid-template-columns: 420px 1fr; gap: 40px; padding: 30px; }
+.qv-cover { background: linear-gradient(145deg, #6e8f80, #4d6f61); border-radius: var(--r-lg); padding: 40px; display: grid; place-items: center; margin-bottom: 20px; }
+.qv-cover img { max-height: 380px; width: auto; border-radius: 4px 10px 10px 4px; box-shadow: -10px 18px 36px rgba(0, 0, 0, .45); }
+.qv-grid .fmt-label { color: rgba(255, 255, 255, .6); }
+.qv-grid .fmt span { background: var(--ink-2); border-color: var(--ink-4); color: #fff; }
+.qv-grid .fmt span i { color: rgba(255, 255, 255, .6); }
+.qv-grid .fmt input:checked + span { background: rgba(255, 196, 0, .12); border-color: var(--yellow); box-shadow: none; }
+.qv-grid .fmt input:checked + span i { color: var(--yellow); }
+.qv-grid .fmt:hover span { border-color: var(--yellow); }
+.qv-title { font-family: var(--font-display); font-size: clamp(28px, 3vw, 40px); }
+.qv-author { color: var(--yellow); font-weight: 800; margin-top: 6px; }
+.qv-rate { display: flex; align-items: center; gap: 12px; margin: 10px 0 20px; color: rgba(255, 255, 255, .7); font-weight: 600; font-size: 14.5px; }
+.qv-grid .tabs { margin-top: 0; }
+.qv-grid .tab-nav { border-color: var(--ink-4); gap: 0; }
+.qv-grid .tab-btn { color: rgba(255, 255, 255, .6); padding: 12px 18px; font-size: 15px; }
+.qv-grid .tab-btn.active { color: var(--yellow); }
+.qv-grid .tab-pane { padding-top: 20px; min-height: 150px; }
+.qv-grid .prose { color: rgba(255, 255, 255, .8); font-size: 15.5px; line-height: 1.8; }
+.qv-quote { border: 1px solid var(--ink-4); background: var(--ink); border-radius: var(--r); padding: 22px 24px; font-family: var(--font-display); font-style: italic; color: rgba(255, 255, 255, .85); line-height: 1.8; white-space: pre-line; }
+.contents-list { counter-reset: c; display: grid; gap: 8px; }
+.contents-list li { counter-increment: c; display: flex; gap: 14px; padding: 12px 16px; border-radius: 12px; background: var(--ink-2); font-weight: 600; font-size: 14.5px; }
+.contents-list li::before { content: counter(c, decimal-leading-zero); color: var(--yellow); font-weight: 800; font-family: var(--font-display); }
+.page-body .contents-list li { background: #fff; border: 1px solid var(--line); }
+.page-body .contents-list li::before { color: var(--yellow-3); }
+.qv-mini-review { padding: 14px 0; border-top: 1px solid var(--ink-4); font-size: 14.5px; color: rgba(255, 255, 255, .8); }
+.qv-mini-review b { color: #fff; margin-right: 8px; }
+.qv-more { display: inline-block; margin-top: 12px; color: var(--yellow); font-weight: 800; border-bottom: 2px solid var(--yellow); }
+.qv-grid .pd-pricebox { background: var(--ink-2); margin: 22px 0 14px; }
+.qv-grid .buy-actions { grid-template-columns: 1fr; }
+.qv-close { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--ink-3); color: #fff; font-size: 20px; }
+.qv-close:hover { background: var(--yellow); color: var(--black); }
+.qv-loading { padding: 90px 20px; text-align: center; color: var(--yellow); font-size: 30px; }
+audio { width: 100%; max-width: 100%; height: 46px; border-radius: 999px; margin-top: 14px; }
+.audio-card { margin-top: 18px; padding: 18px 20px; border-radius: var(--r); background: var(--yellow-soft); border: 2px solid #ffe38a; color: var(--text); }
+.audio-card b { display: flex; gap: 10px; align-items: center; font-size: 14.5px; } .audio-card b i { color: var(--yellow-3); }
+.qv-grid .audio-card { background: var(--ink-2); border-color: var(--ink-4); color: #fff; }
+.owned-box { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 16px 20px; border-radius: var(--r); background: #ecfdf3; border: 2px solid #abefc6; color: #067647; font-weight: 700; margin-bottom: 18px; }
+.owned-box a { margin-left: auto; }
+
+/* --- Savat: promokod, chegirma qatorlari, format yorlig'i --- */
+.fmt-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px; background: var(--black); color: var(--yellow); font-size: 11.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
+.fmt-badge.paper { background: var(--cream-2); color: var(--muted); }
+.promo-box { margin: 4px 0 22px; padding: 18px; border-radius: var(--r); background: var(--ink-2); border: 1px dashed rgba(255, 196, 0, .5); }
+.promo-box label { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--yellow); margin-bottom: 10px; }
+.promo-row { display: flex; gap: 8px; }
+.promo-row input { flex: 1; min-width: 0; height: 48px; border-radius: 12px; border: 2px solid var(--ink-4); background: var(--ink); color: #fff; padding: 0 14px; font: inherit; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.promo-row input::placeholder { color: var(--muted-2); letter-spacing: .04em; text-transform: none; font-weight: 600; }
+.promo-row input:focus { outline: none; border-color: var(--yellow); }
+.promo-row .btn { padding: 0 20px; border-radius: 12px; }
+.promo-applied { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 12px; background: rgba(31, 157, 85, .16); color: #4ade80; font-weight: 800; }
+.promo-applied form { margin: 0; } .promo-applied button { background: none; border: 0; color: #fff; opacity: .7; font-weight: 700; font-size: 13px; text-decoration: underline; }
+.sum-row.discount b { color: #4ade80; }
+.sum-row s { color: var(--muted-2); }
+.bundle-hint { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 16px 20px; border-radius: var(--r); background: var(--yellow-soft); border: 2px solid #ffe38a; font-weight: 700; font-size: 14.5px; }
+.bundle-hint i { color: var(--yellow-3); font-size: 22px; } .bundle-hint form { margin-left: auto; }
+.bundle-applied { display: flex; gap: 12px; align-items: center; padding: 14px 20px; border-radius: var(--r); background: #ecfdf3; border: 2px solid #abefc6; color: #067647; font-weight: 800; }
+
+/* --- Kutubxona --- */
+.lib-grid { display: grid; gap: 18px; max-width: 900px; margin: 0 auto; }
+.lib-card { display: grid; grid-template-columns: 92px 1fr; gap: 22px; padding: 20px; background: #fff; border: 1.5px solid var(--line); border-radius: var(--r-lg); align-items: start; transition: all .3s var(--ease); }
+.lib-card:hover { border-color: var(--yellow); box-shadow: var(--shadow); }
+.lib-card img { width: 92px; height: 128px; object-fit: cover; border-radius: 5px 10px 10px 5px; box-shadow: -4px 8px 16px rgba(20, 16, 0, .25); }
+.lib-card h3 { font-family: var(--font-display); font-size: 21px; margin: 4px 0 2px; }
+.lib-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+/* --- Fikrlar --- */
+.review-del { margin-left: 12px; } .review-del button { background: none; border: 0; color: var(--muted); font-size: 13px; font-weight: 700; padding: 4px; }
+.review-del button:hover { color: var(--red); }
+.review-form .rf-note { font-size: 13px; color: var(--muted); font-weight: 600; margin: -6px 0 14px; }
+
+/* --- Yangi qismlar uchun mobil moslik --- */
+@media (max-width: 1180px) { .offer { grid-template-columns: auto 1fr; } .offer .countdown { grid-column: 1 / -1; justify-content: flex-start; } .offer-cta { grid-column: 1 / -1; } }
+@media (max-width: 960px) {
+  .qv-modal { padding: 0; align-items: end; }
+  .qv-box { max-height: 94vh; border-radius: var(--r-xl) var(--r-xl) 0 0; }
+  .qv-grid { grid-template-columns: 1fr; gap: 22px; padding: 20px; }
+  .qv-cover { padding: 26px; margin-bottom: 16px; } .qv-cover img { max-height: 260px; }
+  .qv-head { padding: 14px 20px; }
+  .buy-actions [data-incart-link] { grid-column: 1 / -1; }
+}
+@media (max-width: 680px) {
+  .offer { grid-template-columns: 1fr; padding: 22px 20px; gap: 18px; text-align: left; }
+  .offer-ico { width: 60px; height: 60px; font-size: 28px; border-radius: 16px; }
+  .offer .countdown { gap: 6px; } .cd-box { min-width: 0; flex: 1; padding: 8px 4px 6px; } .cd-box b { font-size: 24px; }
+  .offer-mini { grid-template-columns: 1fr; }
+  .fmt-picker { gap: 8px; } .fmt span { padding: 12px 4px; font-size: 13px; }
+  .buy-actions { grid-template-columns: 1fr auto; }
+  .promo-row .btn { padding: 0 14px; }
+  .bundle-hint form { margin-left: 0; width: 100%; } .bundle-hint form .btn { width: 100%; }
+  .lib-card { grid-template-columns: 70px 1fr; gap: 14px; padding: 14px; } .lib-card img { width: 70px; height: 98px; }
+  .owned-box a { margin-left: 0; width: 100%; }
+  .qv-grid .tab-btn { padding: 11px 12px; font-size: 14px; }
+}
+
+/* --- Telefon: grid ustunlari kontent tufayli kengayib ketmasin --- */
+.book-card, .book-info, .cart-item > div, .oi > div, .lib-card > div, .offer > div { min-width: 0; }
+.book-author, .book-title { overflow-wrap: anywhere; }
+@media (max-width: 960px) { .shop-layout, .cart-layout, .pd, .blog-layout, .contact-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 680px) { .rail, .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .toolbar > * { min-width: 0; } .sort-wrap select { max-width: 100%; } }
+
+/* --- Tez ko'rish oynasi: telefonda kenglik mazmunga qarab cho'zilmasin --- */
+.qv-grid > div { min-width: 0; }
+@media (max-width: 960px) { .qv-grid { grid-template-columns: minmax(0, 1fr); } .qv-grid .tab-nav { overflow-x: auto; scrollbar-width: none; } .qv-grid .tab-btn { white-space: nowrap; } }
+.offer-text small { font-size: 12.5px; letter-spacing: .1em; }

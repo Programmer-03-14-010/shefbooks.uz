@@ -87,8 +87,8 @@
   }
 
   /* ---------- Count-up ---------- */
-  $$('[data-count]').forEach(function (el) {
-    var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+  $$('[data-countup]').forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-countup'), 10) || 0;
     var suffix = el.getAttribute('data-suffix') || '';
     if (!('IntersectionObserver' in window)) { el.textContent = target + suffix; return; }
     var obs = new IntersectionObserver(function (en) {
@@ -158,7 +158,13 @@
         if (!res.ok || !j.ok) { window.shefToast(j.message || "Xatolik yuz berdi", 'warning'); return; }
         setBadge('[data-cart-badge]', j.cart_count);
         setBadge('[data-wish-badge]', j.wish_count);
-        if (kind === 'cart') {
+        if (kind === 'cart' && form.hasAttribute('data-keep')) {
+          var box = form.closest('[data-buybox]');
+          var radio = box && box.querySelector('.fmt input:checked');
+          if (radio) radio.setAttribute('data-incart', j.in_cart ? '1' : '0');
+          if (box) syncBuyBox(box);
+          refreshMiniCart();
+        } else if (kind === 'cart') {
           if (j.in_cart) {
             var link = document.createElement('a');
             link.href = form.getAttribute('data-cart-url') || '/';
@@ -180,18 +186,98 @@
       .catch(function () { if (btn) btn.disabled = false; form.removeAttribute('data-ajax'); form.submit(); });
   });
 
-  /* ---------- Tablar ---------- */
-  $$('[data-tabs]').forEach(function (wrap) {
-    var btns = $$('.tab-btn', wrap), panes = $$('.tab-pane', wrap);
-    function open(id) {
-      btns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === id); });
-      panes.forEach(function (p) { p.classList.toggle('active', p.id === id); });
+  /* ---------- Tablar (delegatsiya: tez ko'rish oynasida ham ishlaydi) ---------- */
+  function openTab(wrap, id) {
+    $$('.tab-btn', wrap).forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === id); });
+    $$('.tab-pane', wrap).forEach(function (p) { p.classList.toggle('active', p.id === id); });
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    var wrap = btn.closest('[data-tabs]');
+    if (wrap) openTab(wrap, btn.getAttribute('data-tab'));
+  });
+  var tabsWrap = $('[data-tabs]');
+  if (tabsWrap && location.hash === '#reviews' && document.getElementById('tab-reviews')) {
+    openTab(tabsWrap, 'tab-reviews');
+    setTimeout(function () { tabsWrap.scrollIntoView({ behavior: 'smooth' }); }, 400);
+  }
+
+  /* ---------- Format tanlash: narx, tugma va holat ---------- */
+  function syncBuyBox(box) {
+    var radio = box.querySelector('.fmt input:checked');
+    if (!radio) return;
+    var fmt = radio.value;
+    var now = box.querySelector('[data-now]'), old = box.querySelector('[data-old]');
+    if (now) now.textContent = radio.getAttribute('data-price');
+    if (old) {
+      var o = radio.getAttribute('data-old');
+      old.style.display = o ? '' : 'none';
+      var ot = old.querySelector('[data-old-text]'); if (ot) ot.textContent = o;
     }
-    btns.forEach(function (b) { b.addEventListener('click', function () { open(b.getAttribute('data-tab')); }); });
-    if (location.hash === '#reviews' && document.getElementById('tab-reviews')) {
-      open('tab-reviews');
-      setTimeout(function () { wrap.scrollIntoView({ behavior: 'smooth' }); }, 400);
+    var fi = box.querySelector('[data-fmt-input]'); if (fi) fi.value = fmt;
+    var form = box.querySelector('.buy-form'), link = box.querySelector('[data-incart-link]');
+    var btn = box.querySelector('[data-buy-btn]');
+    var inCart = radio.getAttribute('data-incart') === '1';
+    var avail = radio.getAttribute('data-available') === '1';
+    if (form) form.classList.toggle('hide', inCart);
+    if (link) link.classList.toggle('hide', !inCart);
+    if (btn) {
+      btn.disabled = !avail;
+      var label = btn.querySelector('span');
+      if (label) label.textContent = avail ? (fmt === 'paper' ? "Savatga qo'shish" : "Savatga qo'shish") : "Sotuvda yo'q";
     }
+    var pill = box.querySelector('[data-pill]');
+    if (pill) { pill.className = 'stock-pill ' + radio.getAttribute('data-pill-class'); pill.textContent = radio.getAttribute('data-pill-text'); }
+    var note = box.querySelector('[data-fmt-note]');
+    if (note) note.classList.toggle('show', fmt !== 'paper');
+  }
+  window.syncBuyBox = syncBuyBox;
+  document.addEventListener('change', function (e) {
+    if (!e.target.matches('.fmt input')) return;
+    var box = e.target.closest('[data-buybox]'); if (box) syncBuyBox(box);
+  });
+  function initBuyBoxes(root) { $$('[data-buybox]', root || document).forEach(syncBuyBox); }
+  initBuyBoxes();
+
+  /* ---------- Tez ko'rish oynasi ---------- */
+  var qv = $('#qv-modal');
+  function closeQuick() { if (qv) { qv.classList.remove('show'); body.classList.remove('qv-open'); var a = $('audio', qv); if (a) a.pause(); } }
+  if (qv) {
+    var qvContent = $('.qv-content', qv);
+    document.addEventListener('click', function (e) {
+      var opener = e.target.closest('[data-quick]');
+      if (opener) {
+        e.preventDefault();
+        qvContent.innerHTML = '<div class="qv-loading"><i class="fa fa-spinner fa-spin"></i></div>';
+        qv.classList.add('show'); body.classList.add('qv-open');
+        fetch(opener.getAttribute('data-url'), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+          .then(function (r) { if (!r.ok) throw new Error(); return r.text(); })
+          .then(function (html) { qvContent.innerHTML = html; initBuyBoxes(qvContent); })
+          .catch(function () { closeQuick(); window.shefToast("Ma'lumotni yuklab bo'lmadi", 'error'); });
+        return;
+      }
+      if (e.target.closest('[data-qv-close]') || e.target === qv) closeQuick();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeQuick(); });
+  }
+
+  /* ---------- Taymer (aksiya) ---------- */
+  $$('[data-countdown]').forEach(function (el) {
+    var end = new Date(el.getAttribute('data-countdown')).getTime();
+    var offer = el.closest('.offer');
+    var d = $('[data-d]', el), h = $('[data-h]', el), m = $('[data-m]', el), sec = $('[data-s]', el);
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function tick() {
+      var left = Math.max(0, Math.floor((end - Date.now()) / 1000));
+      var days = Math.floor(left / 86400);
+      if (d) { d.textContent = pad(days); var box = d.closest('.cd-box'); if (box) box.classList.toggle('show', days > 0); }
+      h.textContent = pad(Math.floor((left % 86400) / 3600));
+      m.textContent = pad(Math.floor((left % 3600) / 60));
+      sec.textContent = pad(left % 60);
+      if (left === 0) { if (offer) offer.classList.add('ended'); clearInterval(timer); }
+    }
+    var timer = setInterval(tick, 1000); tick();
   });
 
   /* ---------- Galereya ---------- */

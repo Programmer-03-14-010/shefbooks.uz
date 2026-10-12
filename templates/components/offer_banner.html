@@ -1,0 +1,24 @@
+{% load my_tags %}
+{% if offer %}
+<div class="offer {% if mini %}offer-mini{% endif %} reveal">
+  <div class="offer-ico"><i class="fa fa-fire"></i></div>
+  <div class="offer-text">
+    <small>{{ offer.label }} — {{ offer.discount_percent }}% chegirma</small>
+    <h3>{% if mini %}Bu kitob aksiyada: {% endif %}{{ offer.title }}</h3>
+    <p>{{ offer.books_line }}</p>
+    {% if not mini %}<div class="offer-books">{% for b in offer.book_list %}<img src="{{ b.image1.url }}" alt="{{ b.title }}" loading="lazy">{% endfor %}</div>{% endif %}
+  </div>
+  <div class="countdown" data-countdown="{{ offer.ends_at|date:'c' }}" aria-label="Aksiya tugashiga qolgan vaqt">
+    <div class="cd-box is-days"><b data-d>00</b><span>KUN</span></div><span class="cd-sep">:</span>
+    <div class="cd-box"><b data-h>00</b><span>SOAT</span></div><span class="cd-sep">:</span>
+    <div class="cd-box"><b data-m>00</b><span>DAQIQA</span></div><span class="cd-sep">:</span>
+    <div class="cd-box"><b data-s>00</b><span>SONIYA</span></div>
+  </div>
+  <form method="post" action="{% url 'orders:add-bundle' offer.pk %}">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button type="submit" class="btn btn-yellow offer-cta" {% if not offer.in_stock %}disabled{% endif %}>
+      {% if offer.in_stock %}To'plamni olish ({{ offer.bundle_price|money }} so'm){% else %}Hozircha tugagan{% endif %}
+    </button>
+  </form>
+</div>
+{% endif %}

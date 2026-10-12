@@ -1,0 +1,19 @@
+{% load my_tags %}
+<div class="fmt-label">Formatni tanlang:</div>
+<div class="fmt-picker {% if product.formats|length < 2 %}single{% endif %}">
+  {% for f in product.formats %}
+  {% cart_key product.pk f.code as ck %}
+  <label class="fmt">
+    <input type="radio" name="fmt-{{ uid }}" value="{{ f.code }}" {% if forloop.first %}checked{% endif %}
+      data-price="{{ f.price|money }} so'm" data-old="{% if f.old_price %}{{ f.old_price|money }} so'm{% endif %}"
+      data-available="{% if f.available %}1{% else %}0{% endif %}" data-incart="{% if ck in cart_keys %}1{% else %}0{% endif %}"
+      {% if f.code == 'paper' %}
+        {% if not f.available %}data-pill-class="no" data-pill-text="Sotuvda yo'q"
+        {% elif product.quantity <= 5 %}data-pill-class="low" data-pill-text="Faqat {{ product.quantity }} ta qoldi"
+        {% else %}data-pill-class="ok" data-pill-text="Sotuvda mavjud"{% endif %}
+      {% else %}data-pill-class="ok" data-pill-text="Darhol — to'lovdan keyin ochiladi"{% endif %}>
+    <span><i class="fa {{ f.icon }}"></i>{{ f.label }}</span>
+  </label>
+  {% endfor %}
+</div>
+<div class="fmt-note" data-fmt-note><i class="fa fa-info-circle"></i><span>Raqamli format — yetkazib berish shart emas. To'lov tasdiqlangach «Kutubxonam» bo'limida ochiladi.</span></div>

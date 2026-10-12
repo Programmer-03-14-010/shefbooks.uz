@@ -5,7 +5,7 @@
   {% for e in cart_header_items %}
   <a class="mc-item" href="{{ e.product.get_absolute_url }}">
     <img src="{{ e.product.image1.url }}" alt="">
-    <div><div class="mc-title">{{ e.product.title }}</div><div class="mc-meta">{{ e.quantity }} × {{ e.product.price|money }} so'm</div></div>
+    <div><div class="mc-title">{{ e.product.title }}</div><div class="mc-meta">{% if e.format != 'paper' %}{{ e.format_label }} · {% endif %}{{ e.quantity }} × {{ e.unit_price|money }} so'm</div></div>
     <div class="mc-price">{{ e.subtotal|money }}</div>
   </a>
   {% endfor %}

@@ -15,7 +15,7 @@
           <div class="num"><span id="card-num">{{ card_number }}</span><button type="button" class="copy-btn" data-copy="{{ card_number }}"><i class="fa fa-files-o"></i> Nusxalash</button></div>
           <div class="holder">{{ card_holder }}</div>
         </div>
-        <div class="pay-note"><i class="fa fa-info-circle"></i><div>Kartaga <b>{{ order.total_amount|money }} so'm</b> o'tkazing{% if order.is_uzpost %} va pochta xizmati uchun alohida <b>{{ order.delivery_fee|money }} so'm</b> to'lang{% endif %}. Chek rasmini pastdagi formaga yuklang — to'lov tekshirilgach, buyurtmangiz tasdiqlanadi.</div></div>
+        <div class="pay-note"><i class="fa fa-info-circle"></i><div>Kartaga <b>{{ order.total_amount|money }} so'm</b> o'tkazing{% if order.is_uzpost %} va pochta xizmati uchun alohida <b>{{ order.delivery_fee|money }} so'm</b> to'lang{% endif %}. Chek rasmini pastdagi formaga yuklang — to'lov tekshirilgach, buyurtmangiz tasdiqlanadi.{% if order.has_digital %} E-kitob va audio kitoblar tasdiqlangach <b>Kutubxonam</b> bo'limida ochiladi.{% endif %}</div></div>
 
         <form class="form-card" method="post" enctype="multipart/form-data" style="margin-top:26px">
           {% csrf_token %}
@@ -42,11 +42,12 @@
       <aside class="summary-card">
         <h3>Buyurtma #{{ order.id }}</h3>
         {% for item in order.items.all %}
-        <div class="sum-row"><span>{{ item.product_title|truncatechars:30 }} × {{ item.product_quantity }}</span><b>{{ item.product_price|money }}</b></div>
+        <div class="sum-row"><span>{{ item.product_title|truncatechars:30 }}{% if item.format != 'paper' %} ({{ item.format_label }}){% endif %} × {{ item.product_quantity }}</span><b>{{ item.product_price|money }}</b></div>
         {% endfor %}
-        <div class="sum-row"><span>Yetkazish punkti</span><b style="text-align:right;font-size:13px;max-width:60%">{{ order.address|truncatechars:60 }}</b></div>
+        {% if order.discount_amount %}<div class="sum-row discount"><span>Chegirma{% if order.promo_code %} ({{ order.promo_code }}){% endif %}</span><b>−{{ order.discount_amount|money }}</b></div>{% endif %}
+        {% if order.has_physical %}<div class="sum-row"><span>Yetkazish punkti</span><b style="text-align:right;font-size:13px;max-width:60%">{{ order.address|truncatechars:60 }}</b></div>{% endif %}
         {% if order.is_uzpost %}<div class="sum-row"><span>Pochta xizmati (alohida)</span><b>{{ order.delivery_fee|money }}</b></div>{% endif %}
-        <div class="sum-total"><span>Kitoblar jami</span><strong>{{ order.total_amount|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
+        <div class="sum-total"><span>To'lanadigan summa</span><strong>{{ order.total_amount|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
         <div class="assure"><div><i class="fa fa-user"></i> {{ order.full_name }}</div><div><i class="fa fa-phone"></i> {{ order.phone_number }}</div></div>
       </aside>
     </div>

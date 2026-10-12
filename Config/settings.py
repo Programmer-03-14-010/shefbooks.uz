@@ -136,6 +136,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # ── Media fayllar ───────────────────────────────────────────
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media/'   # e-kitob va to'liq audio shu yerda (ochiq URL yo'q)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

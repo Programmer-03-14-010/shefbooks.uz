@@ -16,9 +16,9 @@
         <a href="{% url 'products:list' %}?sort=new" class="btn btn-ghost btn-lg">Yangi kelganlar</a>
       </div>
       <div class="hero-stats">
-        <div><b data-count="{{ books_total|default:0 }}" data-suffix="+">{{ books_total }}+</b><span>Kitoblar katalogda</span></div>
-        <div><b data-count="14">14</b><span>Hudud va viloyatlar</span></div>
-        <div><b data-count="592">592</b><span>Yetkazib berish punktlari</span></div>
+        <div><b data-countup="{{ books_total|default:0 }}" data-suffix="+">{{ books_total }}+</b><span>Kitoblar katalogda</span></div>
+        <div><b data-countup="14">14</b><span>Hudud va viloyatlar</span></div>
+        <div><b data-countup="592">592</b><span>Yetkazib berish punktlari</span></div>
       </div>
     </div>
 
@@ -51,6 +51,9 @@
     </div>
   </div>
 </section>
+
+<!-- VAQTLI AKSIYA -->
+{% if offer %}<section class="offer-wrap"><div class="container">{% include 'components/offer_banner.html' %}</div></section>{% endif %}
 
 <!-- TURKUMLAR -->
 {% if categories %}

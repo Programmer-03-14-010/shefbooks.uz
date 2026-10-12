@@ -15,14 +15,15 @@
         {% for item in order.items.all %}
         <div class="oi" style="margin-bottom:10px">
           {% if item.product %}<img src="{{ item.product.image1.url }}" alt="">{% else %}<span></span>{% endif %}
-          <div><b>{{ item.product_title }}</b><small>{{ item.product_quantity }} × {{ item.product_price|money }} so'm</small></div>
+          <div><b>{{ item.product_title }}</b><small>{% if item.format != 'paper' %}{{ item.format_label }} · {% endif %}{{ item.product_quantity }} × {{ item.product_price|money }} so'm</small></div>
           <div><b style="font-family:var(--font-body)">{{ item.product_price|money }}</b></div>
         </div>
         {% endfor %}
         <div class="order-meta">
           <div><small>Qabul qiluvchi</small><b>{{ order.full_name }}</b></div>
           <div><small>Telefon</small><b>{{ order.phone_number }}</b></div>
-          <div><small>Punkt</small><b>{{ order.address }}</b></div>
+          {% if order.has_physical %}<div><small>Punkt</small><b>{{ order.address }}</b></div>{% endif %}
+          {% if order.discount_amount %}<div><small>Chegirma{% if order.promo_code %} ({{ order.promo_code }}){% endif %}</small><b>−{{ order.discount_amount|money }} so'm</b></div>{% endif %}
           <div><small>Jami</small><b>{{ order.total_amount|money }} so'm</b></div>
         </div>
       </div>
@@ -33,7 +34,7 @@
         <div><i class="fa fa-truck"></i>Kitob punktga yuboriladi</div>
       </div>
       <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-        <a href="{% url 'orders:my-orders' %}" class="btn btn-dark btn-lg">Buyurtmalarim</a>
+        <a href="{% url 'orders:my-orders' %}" class="btn btn-dark btn-lg">Buyurtmalarim</a>{% if order.has_digital %}<a href="{% url 'orders:library' %}" class="btn btn-ghost btn-lg" style="--fg:var(--black);--bd:var(--black)"><i class="fa fa-headphones"></i> Kutubxonam</a>{% endif %}
         <a href="{% url 'products:list' %}" class="btn btn-yellow btn-lg">Xaridni davom ettirish</a>
       </div>
     </div>

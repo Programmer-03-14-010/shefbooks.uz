@@ -10,25 +10,40 @@
     {% include 'components/steps_bar.html' with step=1 %}
     <div class="cart-layout">
       <div class="cart-list">
+
+        {% for b in cart.bundles %}
+        <div class="bundle-applied"><i class="fa fa-fire"></i> «{{ b.offer.title }}» to'plami: −{{ b.offer.discount_percent }}% chegirma qo'llandi ({{ b.amount|money }} so'm)</div>
+        {% endfor %}
+        {% for m in cart.bundle_missing %}
+        <div class="bundle-hint"><i class="fa fa-fire"></i>
+          <span>«{{ m.offer.title }}» aksiyasida −{{ m.offer.discount_percent }}% chegirma! Yana qo'shing: {% for b in m.missing %}<b>{{ b.title }}</b>{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+          <form method="post" action="{% url 'orders:add-bundle' m.offer.pk %}">{% csrf_token %}<button class="btn btn-dark btn-sm" type="submit">To'plamni to'ldirish</button></form>
+        </div>
+        {% endfor %}
+
         {% for item in cart_items %}
         {% with p=item.product %}
         <div class="cart-item">
           <a class="ci-img" href="{{ p.get_absolute_url }}"><img src="{{ p.image1.url }}" alt="{{ p.title }}"></a>
           <div>
+            <span class="fmt-badge {{ item.format }}"><i class="fa {{ item.format_icon }}"></i> {{ item.format_label }}</span>
             {% if p.author %}<div class="ci-author">{{ p.author }}</div>{% endif %}
             <a class="ci-title" href="{{ p.get_absolute_url }}">{{ p.title }}</a>
-            <div class="ci-price">Narxi: <b>{{ p.price|money }} so'm</b></div>
-            {% if not p.is_available %}<div class="ci-warn"><i class="fa fa-exclamation-triangle"></i> Bu kitob hozir sotuvda yo'q — savatdan olib tashlang</div>
-            {% elif p.quantity <= 5 %}<div class="ci-warn"><i class="fa fa-fire"></i> Omborda {{ p.quantity }} ta qoldi</div>{% endif %}
+            <div class="ci-price">Narxi: <b>{{ item.unit_price|money }} so'm</b></div>
+            {% if not item.available %}<div class="ci-warn"><i class="fa fa-exclamation-triangle"></i> Bu format hozir sotuvda yo'q — savatdan olib tashlang</div>
+            {% elif item.format == 'paper' and p.quantity <= 5 %}<div class="ci-warn"><i class="fa fa-fire"></i> Omborda {{ p.quantity }} ta qoldi</div>
+            {% elif item.format != 'paper' %}<div class="ci-price" style="font-size:13px"><i class="fa fa-bolt" style="color:var(--yellow-3)"></i> Raqamli — to'lov tasdiqlangach Kutubxonamda ochiladi</div>{% endif %}
           </div>
           <div class="ci-right">
+            {% if item.format == 'paper' %}
             <div class="qty">
               <form method="post" action="{% url 'orders:decrease-quantity' p.pk %}">{% csrf_token %}<button type="submit" aria-label="Kamaytirish" {% if item.quantity <= 1 %}disabled{% endif %}>−</button></form>
               <b>{{ item.quantity }}</b>
               <form method="post" action="{% url 'orders:increase-quantity' p.pk %}">{% csrf_token %}<button type="submit" aria-label="Ko'paytirish" {% if item.quantity >= p.quantity %}disabled{% endif %}>+</button></form>
             </div>
+            {% endif %}
             <div class="ci-sub">{{ item.subtotal|money }} <small style="font-size:13px">so'm</small></div>
-            <form method="post" action="{% url 'orders:add-or-remove-cart' p.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'orders:cart' %}"><button class="ci-remove" type="submit"><i class="fa fa-trash-o"></i> Olib tashlash</button></form>
+            <form method="post" action="{% url 'orders:add-or-remove-cart' p.pk %}">{% csrf_token %}<input type="hidden" name="fmt" value="{{ item.format }}"><input type="hidden" name="next" value="{% url 'orders:cart' %}"><button class="ci-remove" type="submit"><i class="fa fa-trash-o"></i> Olib tashlash</button></form>
           </div>
         </div>
         {% endwith %}
@@ -38,9 +53,25 @@
 
       <aside class="summary-card">
         <h3>Buyurtma xulosasi</h3>
-        <div class="sum-row"><span>Kitoblar ({{ cart_count }} ta)</span><b>{{ cart_total|money }} so'm</b></div>
-        <div class="sum-row"><span>Yetkazib berish</span><b>Punkt tanlangach</b></div>
-        <div class="sum-total"><span>Jami</span><strong>{{ cart_total|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
+
+        <div class="promo-box">
+          {% if cart.promo %}
+            <div class="promo-applied"><span><i class="fa fa-ticket"></i> {{ cart.promo.code }} · {{ cart.promo.label }}</span>
+              <form method="post" action="{% url 'orders:remove-promo' %}">{% csrf_token %}<button type="submit">Olib tashlash</button></form></div>
+          {% else %}
+            <label for="promo-input"><i class="fa fa-ticket"></i> Promokod</label>
+            <form class="promo-row" method="post" action="{% url 'orders:apply-promo' %}">{% csrf_token %}
+              <input id="promo-input" name="code" placeholder="Masalan: SHEF15" autocomplete="off" maxlength="32">
+              <button class="btn btn-yellow" type="submit">Qo'llash</button>
+            </form>
+          {% endif %}
+        </div>
+
+        <div class="sum-row"><span>Kitoblar ({{ cart.count }} ta)</span><b>{{ cart.subtotal|money }} so'm</b></div>
+        {% if cart.bundle_discount %}<div class="sum-row discount"><span>To'plam chegirmasi</span><b>−{{ cart.bundle_discount|money }} so'm</b></div>{% endif %}
+        {% if cart.promo_discount %}<div class="sum-row discount"><span>Promokod ({{ cart.promo.code }})</span><b>−{{ cart.promo_discount|money }} so'm</b></div>{% endif %}
+        <div class="sum-row"><span>Yetkazib berish</span><b>{% if cart.has_paper %}Punkt tanlangach{% else %}Kerak emas{% endif %}</b></div>
+        <div class="sum-total"><span>Jami</span><strong>{{ cart.total|money }} <small style="font-size:15px;color:#fff">so'm</small></strong></div>
         {% if has_unavailable %}
           <button class="btn btn-yellow btn-lg btn-block" disabled>Avval mavjud bo'lmagan kitobni olib tashlang</button>
         {% else %}

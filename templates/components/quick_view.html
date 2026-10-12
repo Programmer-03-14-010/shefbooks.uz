@@ -1,0 +1,38 @@
+{% load my_tags %}
+<div class="qv-head"><b>{% for c in product.categories.all|slice:":1" %}{{ c.title }}{% empty %}Kitob{% endfor %}</b><button type="button" class="qv-close" data-qv-close aria-label="Yopish"><i class="fa fa-times"></i></button></div>
+<div class="qv-grid" data-buybox>
+  <div>
+    <div class="qv-cover"><img src="{{ product.image1.url }}" alt="{{ product.title }}"></div>
+    {% include 'components/fmt_picker.html' with uid='qv' %}
+  </div>
+  <div>
+    <h2 class="qv-title">{{ product.title }}</h2>
+    {% if product.author %}<div class="qv-author">Muallif: {{ product.author }}</div>{% endif %}
+    <div class="qv-rate">{% stars rating_avg %}<span>{% if rating_count %}{{ rating_avg }} ({{ rating_count }} sharh){% else %}Hali sharh yo'q{% endif %}</span></div>
+
+    <div class="tabs" data-tabs>
+      <div class="tab-nav">
+        <button type="button" class="tab-btn active" data-tab="qv-desc">Sharh va Tavsif</button>
+        <button type="button" class="tab-btn" data-tab="qv-excerpt">Parchani o'qish</button>
+        <button type="button" class="tab-btn" data-tab="qv-toc">Mundarija</button>
+      </div>
+      <div class="tab-pane active" id="qv-desc">
+        <div class="prose">{{ product.short_description }}</div>
+        {% for r in reviews %}<div class="qv-mini-review"><b>{{ r.user.first_name|default:r.user.username }}</b>{% stars r.rating %}<div>{{ r.comment|truncatechars:140 }}</div></div>{% endfor %}
+        <a class="qv-more" href="{{ product.get_absolute_url }}#reviews">Barcha fikrlar va batafsil →</a>
+      </div>
+      <div class="tab-pane" id="qv-excerpt">
+        {% if product.excerpt %}<div class="qv-quote">{{ product.excerpt|truncatechars:700 }}</div>
+        {% else %}<div class="prose">{{ product.short_description }}</div>{% endif %}
+        {% if product.audio_sample %}<div class="audio-card"><b><i class="fa fa-headphones"></i> Audio parcha</b><audio controls preload="none" src="{{ product.audio_sample.url }}"></audio></div>{% endif %}
+      </div>
+      <div class="tab-pane" id="qv-toc">
+        {% if product.contents_list %}<ol class="contents-list">{% for line in product.contents_list|slice:":12" %}<li>{{ line }}</li>{% endfor %}</ol>
+        {% else %}<div class="prose">Mundarija tez orada qo'shiladi.</div>{% endif %}
+      </div>
+    </div>
+
+    {% include 'components/buy_actions.html' %}
+    {% if offer %}<p class="qv-more" style="border:0;color:rgba(255,255,255,.7);margin-top:14px"><i class="fa fa-fire" style="color:var(--yellow)"></i> «{{ offer.title }}» to'plamida −{{ offer.discount_percent }}%</p>{% endif %}
+  </div>
+</div>

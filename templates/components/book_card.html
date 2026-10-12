@@ -1,5 +1,6 @@
 {% load my_tags %}
 <article class="book-card">
+  <div class="cover-wrap">
   <a href="{{ product.get_absolute_url }}" class="book-cover" aria-label="{{ product.title }}">
     <img src="{{ product.image1.url }}" alt="{{ product.title }}" loading="lazy">
     {% if product.image2 %}<img class="alt" src="{{ product.image2.url }}" alt="" loading="lazy">{% endif %}
@@ -11,6 +12,8 @@
       {% endif %}
     </div>
   </a>
+  <button type="button" class="qv-btn" data-quick data-url="{% url 'products:quick' product.pk %}"><i class="fa fa-eye"></i> Tez ko'rish</button>
+  </div>
   <form class="wish-form" method="post" action="{% url 'orders:add-or-remove-wishlist' product.pk %}" data-ajax="wish">
     {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
     <button type="submit" class="wish-btn {% if product.pk in wish_ids %}active{% endif %}" aria-label="Xohishlarga"><i class="fa fa-heart-o"></i></button>

@@ -80,3 +80,9 @@ def stars(rating, size=''):
         else:
             html.append('<i class="fa fa-star off"></i>')
     return format_html('<span class="stars" aria-label="{} / 5">{}</span>', r, format_html(''.join(html)))
+
+
+@register.simple_tag
+def cart_key(pk, fmt='paper'):
+    """Savat kaliti: qog'oz — '12', raqamli — '12:audio'."""
+    return str(pk) if fmt == 'paper' else f'{pk}:{fmt}'

@@ -7,7 +7,7 @@ from django.views.generic import CreateView
 
 from blogs.models import BlogModel
 from pages.forms import ContactForm
-from products.models import ProductModel, ProductCategoryModel
+from products.models import ProductModel, ProductCategoryModel, BundleOfferModel
 
 
 def home_page_view(request):
@@ -36,6 +36,7 @@ def home_page_view(request):
         'discounted': discounted,
         'categories': categories,
         'hero_books': hero_books,
+        'offer': BundleOfferModel.running().first(),
         'latest_blogs': BlogModel.objects.order_by('-created_at')[:3],
         'books_total': ProductModel.objects.count(),
     })
